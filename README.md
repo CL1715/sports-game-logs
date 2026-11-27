@@ -2,7 +2,7 @@
 
 Look up any NBA or NFL player: recent game logs with adjustable stat and range, how their next opponent defends their position (ranked vs the league), and every past game against that team. No odds.
 
-Live site: https://cl1715.github.io/nba-game-logs/
+Live site: https://cl1715.github.io/sports-game-logs/
 
 ## How it stays current
 `.github/workflows/update.yml` runs every 2 hours. It downloads the latest NBA box scores from the open

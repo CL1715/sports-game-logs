@@ -412,7 +412,7 @@ const restFor=(t,ng)=>{const last=D.teams[t].l;if(!last||!ng)return null;return 
 
 // ---------------- injuries + news
 const SCOL=s=>{s=(s||'').toLowerCase();return s.startsWith('out')||s.includes('reserve')||s.includes('suspend')?'var(--bad)':s.startsWith('doubt')?'#d9480f':s.startsWith('quest')||s.includes('day-to-day')?'var(--warn)':s.startsWith('prob')?'var(--good)':'var(--mut)'};
-function injFor(t){return (NL().inj[D.teams[t].a])||null}
+function injFor(t){const m=NL().inj;if(!m||!Object.keys(m).length)return null;return m[D.teams[t].a]||[]}
 function myInjury(){const list=injFor(P.t);if(!list)return null;const k=norm(P.n);return list.find(i=>(L==='nba'&&String(i.id)===String(P.id))||i.k===k)||null}
 function injCard(t,isOwn){
   const tm=D.teams[t],list=injFor(t);

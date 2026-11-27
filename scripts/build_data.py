@@ -230,7 +230,21 @@ def build_nfl():
     played = sch[sch.result.notna()]
     games = played[played.game_id.isin(set(st.game_id))].sort_values(["gameday", "game_id"])
     gix = {g: i for i, g in enumerate(games.game_id)}
-    games_out = [[str(r.gameday), int(r.season), 2 if r.game_type == "REG" else 3, int(r.week)] for r in games.itertuples()]
+
+    # roof: "d" = dome / closed roof, "o" = outdoors / open; fill unknowns from the stadium's usual setting
+    def roof_code(x):
+        return {"dome": "d", "closed": "d", "outdoors": "o", "open": "o"}.get(x, "")
+    stadium_roof = (sch[sch.roof.notna()].groupby("stadium").roof.agg(lambda x: x.mode().iat[0]).map(roof_code).to_dict()
+                    if "stadium" in sch else {})
+
+    def roof_of(r):
+        return roof_code(r.roof) or stadium_roof.get(getattr(r, "stadium", None), "")
+
+    def opt(v):
+        return None if v is None or (isinstance(v, float) and math.isnan(v)) else int(round(float(v)))
+
+    games_out = [[str(r.gameday), int(r.season), 2 if r.game_type == "REG" else 3, int(r.week),
+                  roof_of(r), opt(r.temp), opt(r.wind)] for r in games.itertuples()]
     ginfo = {r.game_id: r for r in games.itertuples()}
 
     cols = ["CMP", "ATT", "PYD", "PTD", "INT", "SK", "CAR", "RYD", "RTD", "TGT", "REC", "RECYD", "RECTD", "FUML", "FPTS"]
@@ -271,7 +285,8 @@ def build_nfl():
             continue
         gt = r.gametime if isinstance(r.gametime, str) and r.gametime else "13:00"
         t = dt.datetime.fromisoformat(f"{r.gameday}T{gt}").replace(tzinfo=ET)
-        sched.append([t.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), tix[r.home_team], tix[r.away_team]])
+        sched.append([t.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), tix[r.home_team], tix[r.away_team],
+                      roof_of(r), str(r.stadium) if isinstance(r.stadium, str) else ""])
     cur = st[st.season == season]
     through = f"Week {int(cur.week.max())}" if len(cur) else ""
     cg = played[played.season == season]

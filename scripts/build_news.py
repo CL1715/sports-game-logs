@@ -120,6 +120,26 @@ def league(lg):
         items.sort(key=lambda x: x["t"], reverse=True)
         out["news"][abbr] = items[:12]
         time.sleep(0.2)
+    # NFL: forecast + venue for this week's games
+    if lg == "nfl":
+        out["wx"] = {}
+        d = get(f"{API}/{PATHS[lg]}/scoreboard")
+        try:
+            for ev in (d or {}).get("events", []):
+                comp = (ev.get("competitions") or [{}])[0]
+                side = {}
+                for c in comp.get("competitors", []):
+                    side[c.get("homeAway")] = by_name.get(((c.get("team") or {}).get("displayName") or "").lower())
+                if not side.get("home") or not side.get("away"):
+                    continue
+                w = ev.get("weather") or comp.get("weather") or {}
+                venue = comp.get("venue") or {}
+                out["wx"][f"{side['away']}@{side['home']}"] = {
+                    "t": w.get("temperature") or w.get("highTemperature"), "d": w.get("displayValue") or "",
+                    "in": bool(venue.get("indoor")), "v": venue.get("fullName") or ""}
+        except Exception as e:  # noqa: BLE001
+            print("  scoreboard parse failed:", e)
+
     print(f"{lg}: {len(out['logo'])} logos, {sum(len(v) for v in out['inj'].values())} injuries, "
           f"{sum(len(v) for v in out['news'].values())} articles")
     return out

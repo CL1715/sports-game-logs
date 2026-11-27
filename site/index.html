@@ -450,6 +450,18 @@ td.tc{font-weight:700}
 .stack .s0{background:color-mix(in oklab,var(--tcb) 40%,#888)}.stack .s1{background:color-mix(in oklab,var(--tcb) 65%,#888)}.stack .s2{background:var(--tcb)}.stack .s3{background:color-mix(in oklab,var(--tcb) 70%,#000)}
 .stackl{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:14px}
 .dir{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 10px}.dir div{background:var(--soft);border-radius:8px;padding:8px;text-align:center}.dir b{display:block;font:700 20px "Barlow Condensed",sans-serif}.dir small{color:var(--mut);text-transform:capitalize}
+.fdays{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.fday{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden}
+.fday summary{display:grid;grid-template-columns:minmax(170px,1.3fr) 70px minmax(150px,1fr) 1fr 56px;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;list-style:none}
+.fday summary::-webkit-details-marker{display:none}
+.fday summary:hover{background:var(--soft)}.fday[open] summary{border-bottom:1px solid var(--line);background:var(--soft)}
+.fdt{font-weight:700;display:flex;flex-direction:column}.fdt::before{content:'▸';position:absolute;margin-left:-14px;color:var(--mut);transition:rotate .2s}.fday[open] .fdt::before{rotate:90deg}
+.fdt{position:relative;padding-left:4px}.fdt small{font-weight:500;color:var(--mut);font-size:12px}
+.fn{color:var(--mut);font-size:14px}.fbar{height:8px;border-radius:4px;background:var(--soft);overflow:hidden}.fday[open] .fbar{background:var(--card)}
+.fbar i{display:block;height:100%;border-radius:4px;background:var(--mut)}.fbar i.good{background:var(--good)}.fbar i.bad{background:var(--bad)}
+.fd{text-align:right;font:700 17px "Barlow Condensed",sans-serif}.fd.up{color:var(--good)}.fd.dn{color:var(--bad)}
+.fdt2 td,.fdt2 th{white-space:nowrap}.fdt2 .up{color:var(--good)}.fdt2 .dn{color:var(--bad)}.fday .scroll{padding:4px 12px 10px}
+@media(max-width:700px){.fday summary{grid-template-columns:1fr auto 48px;gap:8px}.fday .fbar,.fday .fn{display:none}}
 </style>
 </head>
 <body>
@@ -1540,6 +1552,28 @@ function accFilter(g){
     &&(ACC.ver==='all'||(ACC.ver==='fav'?r[9]&&r[10]:accTier(r[8])===ACC.ver))&&(ACC.role==='all'||r[11]===1)&&(ACC.pos==='all'||r[16]===ACC.pos))}
 function addDays(d,n){const t=new Date(d+'T12:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)}
 function accChips(key,opts){return `<div class="grp" data-acc="${key}">${opts.map(([v,l])=>`<button class="chip" data-v="${esc(v)}" aria-pressed="${ACC[key]===v}">${esc(l)}</button>`).join('')}</div>`}
+// favorable list, day by day
+function favLog(G){
+  const today=etDate(new Date(Date.now()).toISOString()),cut=ACC.per==='7'?addDays(today,-7):ACC.per==='30'?addDays(today,-30):'0000';
+  const ok=r=>r[9]&&r[10]&&r[0]>=cut&&(ACC.src==='all'||(ACC.src==='live'?r[13]===1:r[13]===0))&&(ACC.role==='all'||r[11]===1)&&(ACC.pos==='all'||r[16]===ACC.pos);
+  const pl=new Map(D.players.map(p=>[String(p.id),p])),seen=new Map();
+  const put=(x,graded)=>{const k=x.r[0]+'|'+x.r[1]+'|'+x.r[2],o=seen.get(k);if(!o||(x.r[13]===1&&o.r[13]!==1))seen.set(k,{...x,graded})};
+  for(const x of G.out)if(ok(x.r))put(x,true);
+  for(const r of G.pend)if(ok(r))put({r,p:pl.get(r[1]),a:null},false);
+  const days=new Map();for(const x of seen.values()){if(!days.has(x.r[0]))days.set(x.r[0],[]);days.get(x.r[0]).push(x)}
+  const ds=[...days.keys()].sort().reverse();
+  if(!ds.length)return `<p class="quiet">No favorable picks for these filters yet.</p>`;
+  const tot=[...seen.values()].filter(x=>x.graded),tb=tot.filter(x=>x.a>x.r[6]).length,rel=x=>x.r[6]>0?(x.a-x.r[6])/x.r[6]:0,pc=v=>`${v>=0?'+':''}${Math.round(v*100)}%`,ta=mean(tot.map(rel));
+  const head=tot.length?`<p class="plain">Across ${ds.length} days, the favorable list beat the player's season average <b>${tb} of ${tot.length}</b> times (${Math.round(tb/tot.length*100)}%), landing <b class="${ta>=0?'up':'dn'}">${pc(ta)}</b> vs his average on average and <b>${Math.round(mean(tot.map(x=>x.a>x.r[4]?1:0))*100)}%</b> over the standard projection.</p>`:'';
+  return head+`<div class="fdays">${ds.map((d,i)=>{const xs=days.get(d).sort((a,b)=>b.r[7]-a.r[7]),g=xs.filter(x=>x.graded),beat=g.filter(x=>x.a>x.r[6]).length,avgd=g.length?mean(g.map(rel)):null,pend=xs.length-g.length,src=xs.every(x=>x.r[13]===0)?'back-test':xs.every(x=>x.r[13]===1)?'live':'mixed';
+    const rate=g.length?beat/g.length:null,cls=rate==null?'mut':rate>=.6?'good':rate<.45?'bad':'mut';
+    const rows=xs.map(x=>{const r=x.r,p=x.p,o=Number.isInteger(r[14])?D.teams[r[14]]:null,res=!x.graded?'<span class="mu-chip mut">Pending</span>':x.a>r[6]?'<span class="mu-chip good">Beat avg</span>':'<span class="mu-chip bad">Under avg</span>';
+      return `<tr><td>${p?playerLink(p,esc(p.n)):esc(r[1])}<small class="mutd"> ${esc(r[16]||'')}${p?' · '+esc(D.teams[p.t].a):''}${o?` ${r[15]?'vs':'@'} ${esc(o.a)}`:''}</small></td><td>${esc(statName(r[2]))}</td><td class="up">+${Math.round(r[7]*100)}%</td><td class="mutd">${f1(r[6])}</td><td class="mutd">${f1(r[3])}</td><td><b>${f1(r[4])}</b></td><td class="mutd">${f1(r[5])}</td><td class="${!x.graded?'':x.a>r[6]?'up':'dn'}"><b>${x.graded?fv(x.a):'–'}</b></td><td>${res}</td></tr>`}).join('');
+    return `<details class="fday"${i===0?' open':''}><summary><span class="fdt">${esc(fmtDay(d+'T12:00:00'))}<small>${esc(src)}</small></span><span class="fn">${xs.length} picks</span>
+      <span class="fr">${g.length?`<span class="mu-chip ${cls}">${beat}/${g.length} beat avg</span>`:''}${pend?` <span class="mu-chip mut">${pend} pending</span>`:''}</span>
+      <span class="fbar">${g.length?`<i class="${cls}" style="width:${(rate*100).toFixed(0)}%"></i>`:''}</span><span class="fd ${avgd==null?'':avgd>=0?'up':'dn'}">${avgd==null?'':pc(avgd)}</span></summary>
+      <div class="scroll"><table class="sp fdt2"><thead><tr><th>Player</th><th>Stat</th><th>Edge</th><th>Season avg</th><th>Floor</th><th>Std</th><th>Upside</th><th>Actual</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table></div></details>`}).join('')}</div>`;
+}
 function renderAcc(){
   setTheme(LEAGUE_COL[L]);
   $('accView').innerHTML=`<div class="band hero">${heroArt()}<div class="wrap"><h1>How accurate are the projections?</h1><p id="accIntro">Loading the record…</p></div></div><div id="accBody"></div>`;
@@ -1583,6 +1617,7 @@ function renderAccBody(){
         ${B.map(b=>`<div class="drow" tabindex="0" data-tip="${esc(T(`Edge ${b.l}`,['Projections',b.n],['Avg vs season average',b.n?sgn(b.d):'–',b.d>=0?'up':'dn']))}"><span class="dl">${b.l}<small>${b.n} proj</small></span>${dbar(b.d,b.n)}<span class="dv ${b.d>=0?'up':'dn'}">${b.n?sgn(b.d):'–'}</span></div>`).join('')}</div></div>`
       :`<p class="quiet">Nothing graded for these filters yet.</p>`}
     </section>
+    <section class="blk rv"><h2>Favorable list, day by day</h2><p class="sub">The players the home page flagged as favorable each day, best edge first. "Beat avg" means he topped his season average in that stat, which is what a favorable spot predicts. Uses the source, period, player and position filters above. The number on the right is how far above or below his average the day's picks landed. Click a day to open it.</p>${favLog(G)}</section>
     ${rows.length?`<section class="blk rv"><h2>By stat</h2><div class="scroll"><table class="sp"><thead><tr><th>Stat</th><th>Graded</th><th>Model miss</th><th>Season-avg miss</th><th>Model better by</th><th>In floor–upside</th></tr></thead><tbody>${byStat}</tbody></table></div></section>
     <section class="blk rv"><h2>Recent results</h2><p class="sub">Newest first. "bt" marks back-test rows.${G.pend.length?` ${G.pend.length} live projections are waiting on games.`:''}</p><div class="scroll"><table class="sp acct"><thead><tr><th>Date</th><th>Player</th><th>Stat</th><th>Floor</th><th>Std</th><th>Upside</th><th>Actual</th><th>Season avg</th><th>Verdict</th><th>Result</th></tr></thead><tbody>${recent}</tbody></table></div></section>`:''}
     <section class="blk rv"><h2>How to read this</h2><p class="sub">Model ${esc(window.__glModelVersion)}. Back-test rows use only games played before each date, but not the injury news available at the time, so live results are the truer test. Settings were tuned on this season's back-test, so expect live results to come in a little worse. Nothing here accounts for betting lines.</p></section></div>`;

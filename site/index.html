@@ -462,6 +462,13 @@ td.tc{font-weight:700}
 .fd{text-align:right;font:700 17px "Barlow Condensed",sans-serif}.fd.up{color:var(--good)}.fd.dn{color:var(--bad)}
 .fdt2 td,.fdt2 th{white-space:nowrap}.fdt2 .up{color:var(--good)}.fdt2 .dn{color:var(--bad)}.fday .scroll{padding:4px 12px 10px}
 @media(max-width:700px){.fday summary{grid-template-columns:1fr auto 48px;gap:8px}.fday .fbar,.fday .fn{display:none}}
+.inj .ichip{flex:none;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--soft);color:var(--mut);font-variant-numeric:tabular-nums}
+.inj .ichip.up{color:var(--good);background:color-mix(in oklab,var(--good) 12%,transparent)}.inj .ichip.dn{color:var(--bad);background:color-mix(in oklab,var(--bad) 12%,transparent)}
+.inj summary[data-tip]:hover .n{text-decoration:underline dotted;text-underline-offset:3px}
+.inj .ichip em{font-style:normal;font-weight:500;opacity:.8}
+.isub{font-size:12px;color:var(--mut);margin:-4px 0 6px}
+.imp{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 2px;font-variant-numeric:tabular-nums}.imp th{font-size:11px;color:var(--mut);font-weight:600;text-align:right;padding:2px 4px}.imp th:first-child,.imp td:first-child{text-align:left}
+.imp td{text-align:right;padding:3px 4px;border-top:1px solid var(--line)}.imp td.up{color:var(--good);font-weight:700}.imp td.dn{color:var(--bad);font-weight:700}
 </style>
 </head>
 <body>
@@ -679,7 +686,7 @@ function setChips(el,list,key,lead){
   el.innerHTML=(lead?`<span>${lead}</span>`:'')+list.map(([val,l])=>`<button class="chip" data-v="${esc(val)}" aria-pressed="${st[key]===val}">${esc(l)}</button>`).join('');
 }
 for(const[id,key]of[['statGrp','stat'],['rangeGrp','range'],['locGrp','loc']])
-  $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;st[key]=b.dataset.v;save();render(true)});
+  $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;st[key]=b.dataset.v;save();render(true);if(key==='stat'&&P)renderInj()});
 
 function countUp(el,to){
   if(RM||!Number.isFinite(to)){el.textContent=f1(to);return}
@@ -758,9 +765,50 @@ const restFor=(t,ng)=>{const last=D.teams[t].l;if(!last||!ng)return null;return 
 const SCOL=s=>{s=(s||'').toLowerCase();return s.startsWith('out')||s.includes('reserve')||s.includes('suspend')?'var(--bad)':s.startsWith('doubt')?'#d9480f':s.startsWith('quest')||s.includes('day-to-day')?'var(--warn)':s.startsWith('prob')?'var(--good)':'var(--mut)'};
 function injFor(t){const m=NL().inj;if(!m||!Object.keys(m).length)return null;return m[D.teams[t].a]||[]}
 function myInjury(){const list=injFor(P.t);if(!list)return null;const k=norm(P.n);return list.find(i=>(L==='nba'&&String(i.id)===String(P.id))||i.k===k)||null}
+// what an injury means for him: his numbers with/without a teammate, or what the opponent allows his position with/without one of theirs
+const IMPK={nba:['PTS','REB','AST','3PM'],QB:['PYD','PTD','RYD'],RB:['RYD','CAR','REC','RECYD'],WR:['TGT','REC','RECYD'],TE:['TGT','REC','RECYD']};
+function injPlayer(i,t){const k=i.k;return D.players.find(q=>q.t===t&&((L==='nba'&&i.id!=null&&String(q.id)===String(i.id))||norm(q.n)===k))||null}
+function impStats(own){const pc=posCfg(),keys=[...(L==='nba'?IMPK.nba:IMPK[P.p]||IMPK.WR)],cur=statDef();
+  const out=keys.map(k=>pc.stats.find(x=>x[0]===k)).filter(Boolean);if(!out.some(x=>x[0]===cur[0]))out.unshift(cur);
+  if(own&&L==='nba')out.unshift(['MIN','Minutes',r=>v(r,'MIN')]);return out.slice(0,5)}
+function spanOf(rows,cs,listed){const span={};for(const r of rows){const g=D.games[r[0]];const x=span[g[1]]||(span[g[1]]=[g[0],g[0]]);if(g[0]<x[0])x[0]=g[0];if(g[0]>x[1])x[1]=g[0]}if(listed&&span[cs])span[cs][1]='9999';return span}
+const IMPC=new Map();
+function injImpact(i,t,isOwn){
+  if(!P||!D)return null;const key=[L,P.id,t,i.k,st.stat].join('|');if(IMPC.has(key))return IMPC.get(key);
+  const q=injPlayer(i,t),cs=curSeason();let res=null;
+  if(q&&q!==P){const stats=impStats(isOwn);
+    if(isOwn){const seasons=[cs-1,cs],qr=q.g.filter(r=>r[1]===t&&seasons.includes(D.games[r[0]][1]));
+      if(qr.length){const ps=new Set(qr.filter(r=>!isDNP(r)).map(r=>r[0])),sp=spanOf(qr,cs,true),w=[],wo=[];
+        for(const r of P.g){if(r[1]!==t||isDNP(r))continue;const g=D.games[r[0]],x=sp[g[1]];if(!x||g[0]<x[0]||g[0]>x[1])continue;(ps.has(r[0])?w:wo).push(r)}
+        if(w.length>=2&&wo.length>=1)res={q,own:true,nw:w.length,nwo:wo.length,rows:stats.map(([k,l,f])=>[k,l,mean(w.map(f)),mean(wo.map(f))])}}}
+    else{const qr=q.g.filter(r=>r[1]===t&&D.games[r[0]][1]===cs);
+      if(qr.length){const ps=new Set(qr.filter(r=>!isDNP(r)).map(r=>r[0])),sp=spanOf(qr,cs,true)[cs],w=[],wo=[];
+        for(const x of defGames(P.b)){if(x.o!==t)continue;const g=D.games[x.g][0];if(g<sp[0]||g>sp[1])continue;(ps.has(x.g)?w:wo).push(x)}
+        const tot=f=>x=>x.rows.reduce((a,r)=>a+f(r),0);
+        if(w.length>=2&&wo.length>=1)res={q,own:false,nw:w.length,nwo:wo.length,rows:stats.map(([k,l,f])=>[k,l,mean(w.map(tot(f))),mean(wo.map(tot(f)))])}}}
+    if(res){const qp=played(q.g).filter(r=>D.games[r[0]][1]===cs),qs=cfg().pos(q).stats.slice(0,3);res.his=qp.length?{n:qp.length,s:(L==='nba'?[['MIN','min',r=>v(r,'MIN')],...qs]:qs).slice(0,3).map(([k,l,f])=>`${f1(mean(qp.map(f)))} ${L==='nba'&&k!=='MIN'?k.toLowerCase():l.toLowerCase()}`)}:null}
+    else if(q)res={q,none:true}}
+  IMPC.set(key,res);return res;
+}
+function impTone(k,d,base){if(Math.abs(d)<Math.max(.05*Math.abs(base),.15))return '';return (d>0)!==LOWER.has(k)?'up':'dn'}
+function impTip(i,t,isOwn){
+  const im=injImpact(i,t,isOwn),tm=D.teams[t],pos=cfg().posName[P.b]||'his position',ttl=isOwn?`${P.n} without ${i.n}`:`${nick(tm)} without ${i.n}`;
+  if(!im)return T(i.n,isOwn?`~No game log for ${i.n} here${L==='nfl'?' (only offensive players are in the data)':''}, so there's no with/without split.`:`~No game log for ${i.n} here${L==='nfl'?' (defensive players aren’t in the data)':''}, so there's no with/without split for the ${nick(tm)} defense.`);
+  if(im.none)return T(ttl,`~${i.n} hasn't missed a game ${isOwn?`alongside ${P.n}`:'for them this season'} yet, so there's nothing to compare.`);
+  const sub=isOwn?`His averages with ${i.n} playing vs sitting (this season and last, same team only).`:`What the ${nick(tm)} allowed to ${pos} per game with ${i.n} playing vs sitting, this season.`;
+  return T(ttl,'~'+sub,['Games',`${im.nw} with · ${im.nwo} without`],...im.rows.map(([k,l,a,b])=>[l,`${f1(a)} → ${f1(b)} (${b-a>=0?'+':''}${f1(b-a)})`,impTone(k,b-a,a)]),
+    im.his?`~${i.n} this season: ${im.his.s.join(', ')} over ${im.his.n} games.`:null,im.nwo<4?'~Small sample: only a few games without him, so treat this as a hint, not a trend.':null,!isOwn&&L==='nfl'?`~${i.n} plays offense, so this mostly reflects game script (how much the ${nick(tm)} had to defend), not their defense itself.`:null);
+}
+function impDetail(i,t,isOwn){
+  const im=injImpact(i,t,isOwn);if(!im||im.none)return '';
+  return `<table class="imp"><thead><tr><th>${isOwn?esc(P.n.split(' ').slice(-1)[0]):esc(D.teams[t].a)+' allow'}</th><th>With</th><th>Without</th><th></th></tr></thead><tbody>${im.rows.map(([k,l,a,b])=>`<tr><td>${esc(l)}</td><td>${f1(a)}</td><td><b>${f1(b)}</b></td><td class="${impTone(k,b-a,a)}">${b-a>=0?'+':''}${f1(b-a)}</td></tr>`).join('')}</tbody></table><small class="mutd">${im.nw} games with · ${im.nwo} without${im.nwo<4?' · small sample':''}</small>`;
+}
+function impChip(i,t,isOwn){const im=injImpact(i,t,isOwn);if(!im||im.none)return '';const sd=statDef(),r=im.rows.find(x=>x[0]===sd[0]);if(!r)return '';const d=r[3]-r[2],tn=impTone(r[0],d,r[2]);
+  const small=im.nwo<4;return `<span class="ichip ${small?'':tn}">${esc(sd[0])} ${d>=0?'+':''}${f1(d)}${small?` <em>${im.nwo}g</em>`:''}</span>`}
 function injCard(t,isOwn){
   const tm=D.teams[t],list=injFor(t);
   let h=`<h3>${logoImg(tm)}${esc(nick(tm))} injuries<small>${list?list.length+' listed':''}</small></h3>`;
+  if(P&&list&&list.length)h+=`<p class="isub">${isOwn?`Hover a name for ${esc(P.n.split(' ').slice(-1)[0])}'s numbers when that teammate sits`:`Hover a name for what the ${esc(nick(tm))} allow to ${esc(cfg().posName[P.b]||'his position')} without that player`}. Chips show the change in ${esc(statDef()[1].toLowerCase())}.</p>`;
   if(!N)return h+`<p class="quiet">Loading injury report…</p>`;
   if(!list)return h+`<p class="quiet">Injury report unavailable right now.</p>`;
   if(!list.length)return h+`<p class="quiet">Nobody on the injury report.</p>`;
@@ -769,7 +817,8 @@ function injCard(t,isOwn){
     const flag=!P?'':me?'him':(isOwn?cfg().ownFlag(i.p,P):cfg().oppFlag(i.p,P));
     const ret=i.r?` · est. return ${esc(new Date(i.r+'T12:00Z').toLocaleDateString([],{month:'short',day:'numeric'}))}`:'';
     const ftip=flag&&!me?flagTip(flag,i,isOwn):'';
-    return {me,flag,html:`<li class="${me?'me':''}"><details><summary><span class="n">${esc(i.n)}</span><span class="p">${esc(i.p)}</span>${flag&&!me?`<span class="flag" data-tip="${esc(ftip)}">${esc(flag)}</span>`:''}<span class="s" style="--sc:${SCOL(i.s)}">${esc(i.s)}</span></summary><span class="w">${esc(i.w||'Undisclosed')}${ret}${i.d?' · updated '+esc(ago(i.d)):''}</span>${i.c?`<p class="c">${esc(i.c)}</p>`:''}</details></li>`}});
+    const itip=P&&!me?impTip(i,t,isOwn):'',chip=P&&!me?impChip(i,t,isOwn):'';
+    return {me,flag,html:`<li class="${me?'me':''}"><details><summary${itip?` data-tip="${esc(itip)}"`:''}><span class="n">${esc(i.n)}</span><span class="p">${esc(i.p)}</span>${flag&&!me?`<span class="flag" data-tip="${esc(ftip)}">${esc(flag)}</span>`:''}${chip}<span class="s" style="--sc:${SCOL(i.s)}">${esc(i.s)}</span></summary><span class="w">${esc(i.w||'Undisclosed')}${ret}${i.d?' · updated '+esc(ago(i.d)):''}</span>${i.c?`<p class="c">${esc(i.c)}</p>`:''}${P&&!me?impDetail(i,t,isOwn):''}</details></li>`}});
   items.sort((a,b)=>b.me-a.me);
   const show=6,id='inj'+t;
   return h+`<ul class="inj" id="${id}">${items.map((x,i)=>i<show?x.html:x.html.replace('<li ','<li hidden ')).join('')}</ul>`+(items.length>show?`<button class="more" data-more="${id}">Show all ${items.length}</button>`:'');
@@ -789,6 +838,7 @@ function newsCard(opp){
 }
 $('side').addEventListener('click',e=>{const b=e.target.closest('[data-more]');if(!b)return;for(const li of $(b.dataset.more).querySelectorAll('li[hidden]'))li.hidden=false;b.remove()});
 
+function renderInj(){const ng=nextGame(P.t),opp=ng?(ng[1]===P.t?ng[2]:ng[1]):null;$('injOwn').innerHTML=injCard(P.t,true);if(opp!=null)$('injOpp').innerHTML=injCard(opp,false)}
 function renderContext(){
   const ng=nextGame(P.t),opp=ng?(ng[1]===P.t?ng[2]:ng[1]):null;
   $('injOwn').innerHTML=injCard(P.t,true);

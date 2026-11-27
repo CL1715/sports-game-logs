@@ -166,9 +166,15 @@ tr.dnp td{color:var(--mut)}
 .tape-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 150px 64px minmax(0,1fr);align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
 .tv{font:600 19px "Barlow Condensed",sans-serif;color:var(--mut);font-variant-numeric:tabular-nums}.tv.l{text-align:right}.tv.r{text-align:left}.tv.win{color:var(--ink);font-weight:800}
 .tl{text-align:center;font-size:13px;color:var(--mut);font-weight:600}
+.tctx{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut);cursor:help}.tctx.l{justify-content:flex-end}
+.trk{font:700 15px "Barlow Condensed",sans-serif;padding:1px 8px;border-radius:999px;min-width:44px;text-align:center}
+.trk.good{background:color-mix(in oklab,var(--good) 16%,transparent);color:var(--good)}.trk.bad{background:color-mix(in oklab,var(--bad) 14%,transparent);color:var(--bad)}.trk.mut{background:var(--soft);color:var(--mut)}
+.tdv{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tm{flex:1;max-width:160px;height:6px;border-radius:3px;background:var(--soft);overflow:hidden;display:flex}.tctx.l .tm{justify-content:flex-end}
+.tm i{display:block;height:100%;border-radius:3px;background:var(--mut);transform-origin:left}.tctx.l .tm i{transform-origin:right}.tm.none{background:none}.tm.good i{background:var(--good)}.tm.bad i{background:var(--bad)}
 .tb{height:10px;border-radius:5px;background:var(--soft);overflow:hidden;display:flex}.tb.l{justify-content:flex-end}
 .tb i{display:block;height:100%;border-radius:5px;background:var(--ac);opacity:.45;transition:opacity .2s}.tb.r i{background:var(--hc)}.tb i.win{opacity:1}
-@media(max-width:640px){.tape-row{grid-template-columns:minmax(0,1fr) 44px 92px 44px minmax(0,1fr);gap:6px}.tape-h{grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr)}.tl{font-size:12px}.hero .art{opacity:.12}}
+@media(max-width:640px){.tape-row{grid-template-columns:minmax(0,1fr) 44px 92px 44px minmax(0,1fr);gap:6px}.tm,.tdv,.hm{display:none}.tape-h{grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr)}.tl{font-size:12px}.hero .art{opacity:.12}}
 .sk2{border-radius:14px;background:linear-gradient(90deg,var(--soft),var(--line),var(--soft));background-size:200% 100%;animation:sh 1.2s linear infinite}
 @media(prefers-reduced-motion:no-preference){
   html{scroll-behavior:smooth}
@@ -176,7 +182,7 @@ tr.dnp td{color:var(--mut)}
   .hero,.mast{background-size:180% 180%;animation:drift 18s ease-in-out infinite alternate}@keyframes drift{from{background-position:0% 50%}to{background-position:100% 50%}}
   .hero .art .dr{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.8s var(--ease) forwards;animation-delay:calc(var(--d,0)*90ms)}@keyframes draw{to{stroke-dashoffset:0}}
   .hero .art text{animation:fade 1s .8s both}
-  .em i,.tb i{animation:wipe .9s var(--ease) both}.tb.l i{transform-origin:right}
+  .em i,.tb i,.tm i{animation:wipe .9s var(--ease) both}.tb.l i{transform-origin:right}
 }
 @media(prefers-reduced-motion:reduce){.rv{opacity:1;translate:none}}
 /* nav + dashboard */
@@ -1154,11 +1160,22 @@ function renderGame(gi){
 }
 function tape(a,h){
   const sa=teamSummary(a),sh=teamSummary(h);if(!sa||!sh)return '<p class="quiet">Not enough games yet.</p>';
-  const M=L==='nba'?[['Points scored',s=>s.pf],['Points allowed',s=>s.pa,1],['Field goal att',s=>s.f('FGA')],['3-pointers made',s=>s.f('3PM')],['3-point att',s=>s.f('3PA')],['Free throw att',s=>s.f('FTA')],['Assists',s=>s.f('AST')],['Rebounds',s=>s.f('REB')],['Opp 3PM allowed',s=>s.a('3PM'),1],['Turnovers',s=>s.f('TO'),1]]
-    :[['Points scored',s=>s.pf],['Points allowed',s=>s.pa,1],['Pass attempts',s=>s.f('ATT')],['Pass yards',s=>s.f('PYD')],['Rush attempts',s=>s.f('CAR')],['Rush yards',s=>s.f('RYD')],['Pass rate %',s=>{const x=s.f('ATT'),y=s.f('CAR');return x+y?x/(x+y)*100:NaN},2],['Pass yds allowed',s=>s.a('PYD'),1],['Rush yds allowed',s=>s.a('RYD'),1],['Sacks made',s=>s.a('SK')],['Interceptions',s=>s.a('INT')]];
-  const rows=M.map(([lbl,f,lower])=>{const x=f(sa),y=f(sh),mx=Math.max(x,y)||1,neutral=lower===2,aw=neutral?false:lower?x<y:x>y,hw=neutral?false:lower?y<x:y>x;
-    return `<div class="tape-row"><span class="tb l"><i class="${aw?'win':''}" style="width:${(x/mx*100).toFixed(1)}%"></i></span><span class="tv l ${aw?'win':''}">${f1(x)}</span><span class="tl">${esc(lbl)}</span><span class="tv r ${hw?'win':''}">${f1(y)}</span><span class="tb r"><i class="${hw?'win':''}" style="width:${(y/mx*100).toFixed(1)}%"></i></span></div>`}).join('');
-  return `<h2>Tale of the tape</h2><p class="sub">Per game this season. The stronger side of each row is solid${L==='nfl'?'; pass rate just shows style':''}.</p><div class="tape"><div class="tape-h"><span>${esc(D.teams[a].a)}${logoImg(D.teams[a])}</span><span class="tvs">@</span><span>${logoImg(D.teams[h])}${esc(D.teams[h].a)}</span></div>${rows}</div>`;
+  // lower: 1 = lower is better, 2 = style only (no better side)
+  const M=L==='nba'?[['Points scored',s=>s.pf],['Points allowed',s=>s.pa,1],['Field goal att',s=>s.f('FGA')],['3-pointers made',s=>s.f('3PM')],['3-point att',s=>s.f('3PA'),2],['Free throw att',s=>s.f('FTA')],['Assists',s=>s.f('AST')],['Rebounds',s=>s.f('REB')],['Opp 3PM allowed',s=>s.a('3PM'),1],['Turnovers',s=>s.f('TO'),1]]
+    :[['Points scored',s=>s.pf],['Points allowed',s=>s.pa,1],['Pass attempts',s=>s.f('ATT'),2],['Pass yards',s=>s.f('PYD')],['Rush attempts',s=>s.f('CAR'),2],['Rush yards',s=>s.f('RYD')],['Pass rate %',s=>{const x=s.f('ATT'),y=s.f('CAR');return x+y?x/(x+y)*100:NaN},2],['Pass yds allowed',s=>s.a('PYD'),1],['Rush yds allowed',s=>s.a('RYD'),1],['Sacks made',s=>s.a('SK')],['Interceptions',s=>s.a('INT')]];
+  const all=D.teams.map((_,t)=>teamSummary(t)),NT=all.filter(Boolean).length;
+  const side=(t,val,lgVals,lower,lgAvg,isLeft)=>{
+    const sorted=[...lgVals].sort((p,q)=>lower===1?p-q:q-p),rk=sorted.findIndex(x=>x===val)+1,pct=NT>1?(NT-rk)/(NT-1):.5;
+    const tier=lower===2?'mut':rk<=NT/3?'good':rk>2*NT/3?'bad':'mut',d=val-lgAvg;
+    const lbl=lower===2?`${ord(rk)}<span class="hm"> most</span>`:`${ord(rk)}`;
+    const tip=T(`${D.teams[t].n}`,['Value',f1(val),'b'],['League average',f1(lgAvg)],['Rank',lower===2?`${ord(rk)} highest of ${NT}`:`${ord(rk)} best of ${NT}`,tier==='good'?'up':tier==='bad'?'dn':''],lower===2?'~Style, not good or bad.':null);
+    const meter=lower===2?'<span class="tm none"></span>':`<span class="tm ${tier}"><i style="width:${Math.round(pct*100)}%"></i></span>`;
+    const txt=`<span class="trk ${tier}">${lbl}</span><span class="tdv">${d>=0?'+':''}${f1(d)} vs avg</span>`;
+    return `<span class="tctx ${isLeft?'l':'r'}" tabindex="0" data-tip="${esc(tip)}">${isLeft?meter+txt:txt+meter}</span>`};
+  const rows=M.map(([lbl,f,lower])=>{const x=f(sa),y=f(sh),vals=all.filter(Boolean).map(f).filter(Number.isFinite),avg=mean(vals);
+    const aw=lower===2?false:lower?x<y:x>y,hw=lower===2?false:lower?y<x:y>x;
+    return `<div class="tape-row">${side(a,x,vals,lower,avg,true)}<span class="tv l ${aw?'win':''}">${f1(x)}</span><span class="tl">${esc(lbl)}</span><span class="tv r ${hw?'win':''}">${f1(y)}</span>${side(h,y,vals,lower,avg,false)}</div>`}).join('');
+  return `<h2>Tale of the tape</h2><p class="sub">Per game this season. The bold number wins the row. Beside each number: where that team ranks in the league (green = top third, red = bottom third) and how far it is from the league average. Rows like pass rate just describe style.</p><div class="tape"><div class="tape-h"><span>${esc(D.teams[a].a)}${logoImg(D.teams[a])}</span><span class="tvs">@</span><span>${logoImg(D.teams[h])}${esc(D.teams[h].a)}</span></div>${rows}</div>`;
 }
 
 // ---------------- start

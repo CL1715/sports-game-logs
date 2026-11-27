@@ -127,7 +127,7 @@ th,td{padding:7px 8px;text-align:right;white-space:nowrap;border-bottom:1px soli
 th{font-weight:600;color:var(--mut);font-size:13px;background:var(--bg)}
 th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}
 tbody tr{transition:background .15s}tbody tr:hover{background:var(--soft)}
-td.hl{font-weight:700;background:color-mix(in oklab,var(--tcb) 14%,transparent)}
+td.hl{font-weight:700}
 tr.dnp td{color:var(--mut)}
 .tag{font-size:11px;font-weight:600;color:var(--acc);margin-left:4px}
 .W{color:var(--good)}.L{color:var(--bad)}
@@ -157,8 +157,19 @@ tr.dnp td{color:var(--mut)}
 .nowtag{font-size:11px;font-weight:700;color:var(--acc);margin-left:4px}
 .sp tr.lgavg td{color:var(--mut)}
 /* tooltip */
-.tip{position:fixed;left:0;top:0;z-index:200;max-width:min(340px,calc(100vw - 24px));background:var(--ink);color:var(--bg);padding:10px 12px;border-radius:10px;font:14px/1.45 Barlow,system-ui,sans-serif;white-space:pre-line;pointer-events:none;opacity:0;translate:0 4px;transition:opacity .15s,translate .15s;box-shadow:0 12px 30px rgb(0 0 0/.25)}
-.tip.on{opacity:1;translate:0 0}
+.tip{position:fixed;left:0;top:0;z-index:200;width:max-content;min-width:210px;max-width:min(320px,calc(100vw - 24px));background:color-mix(in oklab,var(--card) 94%,transparent);backdrop-filter:blur(10px);color:var(--ink);border:1px solid var(--line);border-top:3px solid var(--tcb);border-radius:12px;padding:10px 12px 9px;font:14px/1.4 Barlow,system-ui,sans-serif;pointer-events:none;opacity:0;translate:0 6px;scale:.97;transform-origin:50% 100%;transition:opacity .16s,translate .2s var(--ease),scale .2s var(--ease);box-shadow:0 18px 44px rgb(0 0 0/.22)}
+.tip.on{opacity:1;translate:0 0;scale:1}
+.tip .tt{display:block;font:700 17px/1.15 "Barlow Condensed",Barlow,sans-serif;margin-bottom:5px}
+.tip .tr{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:4px 0;border-top:1px solid var(--line)}
+.tip .tr span{color:var(--mut)}
+.tip .tr b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tip .tr.up b{color:var(--good)}.tip .tr.dn b{color:var(--bad)}.tip .tr.b b{font-weight:800;font-size:15px}
+.tip .tn{display:block;color:var(--mut);font-size:13px;line-height:1.4;margin-top:6px}
+.tip .tp{display:block;line-height:1.45}
+.lgd{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)}
+.lgd i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.lgd i.up{background:var(--good)}.lgd i.dn{background:var(--bad)}.lgd i.eq{background:color-mix(in oklab,var(--mut) 50%,transparent)}
+td.tc{font-weight:700}
 [data-tip]{cursor:help}
 .ctx span[data-tip],.inj .flag[data-tip]{text-decoration:underline dotted;text-underline-offset:3px}
 .dvrow[data-tip]:hover{background:var(--soft);border-radius:8px}
@@ -413,8 +424,26 @@ function countUp(el,to){
 }
 function replay(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
 
+// ---------------- tip markup + good/bad tones
+const T=(title,...ls)=>[title,...ls.filter(x=>x!=null&&x!==false&&x!=='').map(l=>Array.isArray(l)?l.join('::'):l)].join('\n');
+const sgn=(x,d=1)=>(x>=0?'+':'')+(d?f1(x):String(Math.round(x)));
+const LOWER=new Set(['TO','INT','SK','FUML']);
+function toneOf(val,ref,key){
+  const lower=LOWER.has(key);
+  if(st.mark!=null){const hit=val>=st.mark,good=lower?!hit:hit;return {c:good?'up':'dn',t:1}}
+  if(!Number.isFinite(ref))return {c:'eq',t:0};
+  let d=(val-ref)/Math.max(Math.abs(ref),1);if(lower)d=-d;
+  if(Math.abs(d)<.06)return {c:'eq',t:0};
+  return {c:d>0?'up':'dn',t:clamp(Math.abs(d)/.5,.35,1)};
+}
+const toneFill=tn=>tn.c==='eq'?'color-mix(in oklab,var(--mut) 42%,var(--card))':`color-mix(in oklab,var(--${tn.c==='up'?'good':'bad'}) ${Math.round(50+50*tn.t)}%,var(--card))`;
+const toneCell=tn=>tn.c==='eq'?'':` style="background:color-mix(in oklab,var(--${tn.c==='up'?'good':'bad'}) ${Math.round(12+26*tn.t)}%,transparent)"`;
+function legend(ref,what){const k=st.stat,lower=LOWER.has(k);
+  if(st.mark!=null)return `<span class="lgd"><i class="up"></i>${lower?'under':'hit'} your mark of ${esc(st.mark)} <i class="dn"></i>${lower?'at or over':'missed'}</span>`;
+  return `<span class="lgd"><i class="up"></i>${lower?'fewer':'better'} than ${what} (${f1(ref)}) <i class="dn"></i>${lower?'more':'worse'} <i class="eq"></i>about the same</span>`}
+
 // ---------------- chart
-function bars(svg,rows,withYear){
+function bars(svg,rows,withYear,ref){
   const draw=()=>{
     const W=svg.clientWidth,H=svg.clientHeight;if(!W||!H)return;
     const fn=statDef()[2],pr=played(rows);
@@ -422,12 +451,12 @@ function bars(svg,rows,withYear){
     const vals=pr.map(fn),mx=Math.max(1,...vals,st.mark||0)*1.12,av=mean(vals);
     const padT=22,padB=withYear?40:28,padL=W<520?6:34,padR=6,cw=(W-padL-padR)/pr.length,bw=Math.max(2,Math.min(46,cw*.72));
     const y=val=>padT+(H-padT-padB)*(1-Math.max(0,val)/mx);
-    const gid=svg.id+'g';
-    let s=`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--tcb)"/><stop offset="1" stop-color="var(--tcb)" stop-opacity=".72"/></linearGradient></defs>`;
+    const sd=statDef(),rf=Number.isFinite(ref)?ref:av;
+    let s='';
     if(W>=520){const step=mx>250?50:mx>100?25:mx>40?10:mx>16?5:mx>6?2:1;for(let t=0;t<=mx;t+=step)s+=`<line x1="${padL}" x2="${W-padR}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${padL-6}" y="${y(t)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${t}</text>`}
     pr.forEach((r,i)=>{const val=fn(r),x=padL+cw*i+(cw-bw)/2,g=D.games[r[0]],o=D.teams[r[2]];
-      const hit=st.mark!=null&&val>=st.mark,fill=st.mark==null||hit?`url(#${gid})`:'color-mix(in oklab,var(--mut) 40%,transparent)';
-      const rb=cfg().restB(restOf(r[1],r[0])),tip=`${cfg().dateLbl(g,true)} ${r[3]?'vs':'@'} ${o.n}\n${r[4]?'Win':'Loss'} ${r[5]}-${r[6]}\n${fv(val)} ${statDef()[1].toLowerCase()}${L==='nba'?` in ${v(r,'MIN')} min`:` · ${fv(v(r,'FPTS'))} fantasy pts`}\n${r[3]?'Home':'Away'}${rb?' · '+cfg().restLbl[rb].toLowerCase():''}${st.mark!=null?`\n${val>=st.mark?'Hit':'Missed'} your mark of ${st.mark}`:''}`;
+      const tn=toneOf(val,rf,sd[0]),fill=toneFill(tn),rb=cfg().restB(restOf(r[1],r[0]));
+      const tip=T(`${cfg().dateLbl(g,true)} · ${r[3]?'vs':'@'} ${o.a}`,[sd[1],fv(val),tn.c==='eq'?'b':tn.c],st.mark==null?['vs '+(withYear?'his usual':'this view\'s avg'),sgn(val-rf),tn.c]:['Your mark '+st.mark,(val>=st.mark)?'Hit':'Missed',tn.c],[r[4]?'Win':'Loss',`${r[5]}-${r[6]}`],L==='nba'?['Minutes',v(r,'MIN')]:['Fantasy pts',fv(v(r,'FPTS'))],['Spot',`${r[3]?'Home':'Away'}${rb?' · '+cfg().restLbl[rb].toLowerCase():''}`]);
       s+=`<g style="--i:${i}" data-tip="${esc(tip)}">`;
       s+=`<rect class="bar" x="${x}" y="${y(val)}" width="${bw}" height="${Math.max(0,y(0)-y(val))}" rx="${Math.min(5,bw/4)}" fill="${fill}"/>`;
       if(cw>=18)s+=`<text class="bv" x="${x+bw/2}" y="${y(val)-6}" text-anchor="middle" font-size="${cw>30?13:11}" font-weight="600" fill="var(--ink)">${esc(fv(val))}</text>`;
@@ -444,14 +473,15 @@ function bars(svg,rows,withYear){
   let first=true;svg._ro=new ResizeObserver(()=>{if(first){first=false;return}draw()});svg._ro.observe(svg);draw();
 }
 
-function logTable(rows,withYear){
+function logTable(rows,withYear,ref){
   const pc=posCfg(),sd=statDef(),cols=pc.table,inTable=cols.some(c=>c[0]===st.stat&&!c[1]);
   let s=`<thead><tr><th>${L==='nfl'?'Game':'Date'}</th><th>Opp</th><th>Result</th>${cols.map(c=>`<th>${esc(c[0])}</th>`).join('')}${inTable?'':`<th>${esc(st.stat)}</th>`}</tr></thead><tbody>`;
   for(const r of rows.slice().reverse()){
     const g=D.games[r[0]],o=D.teams[r[2]],tg=cfg().tag(g);
     const head=`<td>${esc(cfg().dateLbl(g,withYear||g[1]!==curSeason()))}${tg?`<span class="tag">${tg}</span>`:''}</td><td>${r[3]?'vs':'@'} ${esc(o.a)}</td><td><span class="${r[4]?'W':'L'}">${r[4]?'W':'L'}</span> ${r[5]}-${r[6]}</td>`;
     if(isDNP(r)){s+=`<tr class="dnp">${head}<td colspan="${cols.length+(inTable?0:1)}" style="text-align:left">Did not play</td></tr>`;continue}
-    s+=`<tr>${head}${cols.map(c=>`<td${c[0]===st.stat&&!c[1]?' class="hl"':''}>${esc(c[1]?c[1](r):fv(v(r,c[0])))}</td>`).join('')}${inTable?'':`<td class="hl">${esc(fv(sd[2](r)))}</td>`}</tr>`;
+    const val=sd[2](r),tc=toneCell(toneOf(val,ref,sd[0]));
+    s+=`<tr>${head}${cols.map(c=>c[0]===st.stat&&!c[1]?`<td class="tc"${tc}>${esc(fv(val))}</td>`:`<td>${esc(c[1]?c[1](r):fv(v(r,c[0])))}</td>`).join('')}${inTable?'':`<td class="tc"${tc}>${esc(fv(val))}</td>`}</tr>`;
   }
   return s+'</tbody>';
 }
@@ -526,7 +556,7 @@ function dvpHtml(){
   if(oppInj){const rel=oppInj.filter(i=>cfg().oppFlag(i.p,P)&&!/^prob/i.test(i.s));if(rel.length)para+=` Keep in mind they're missing or monitoring ${rel.slice(0,3).map(i=>`${esc(i.n)} (${esc(i.p)}, ${esc(i.s.toLowerCase())})`).join(', ')}${rel.length>3?` and ${rel.length-3} more`:''}, so these numbers may understate how soft they are right now.`}
   return `<div class="verdict"><h3>How the ${esc(nick(o))} defend ${pos}</h3><span class="pill" style="background:${tc}">${tl}</span></div>
   <p>${para}</p>
-  ${rows.map(r=>`<div class="dvrow" tabindex="0" data-tip="${esc(`The ${o.n} allow ${f1(r.a)} ${r.lbl} per game to ${pos}, ${pctS(r.a/r.lg)} vs the ${f1(r.lg)} league average.\n${r.rk<=NT/3?'One of the softer spots in the league for this.':r.rk>2*NT/3?'One of the tougher spots in the league for this.':'Roughly middle of the pack.'}`)}"><div class="txt"><b>${f1(r.a)}</b> ${esc(r.lbl)} allowed per game to ${pos}<small>${ord(r.rk)} of ${NT} · ${r.place} · league avg ${f1(r.lg)} (${r.d>=0?'+':''}${f1(r.d)})</small></div>
+  ${rows.map(r=>`<div class="dvrow" tabindex="0" data-tip="${esc(T(`${nick(o)} vs ${pos}: ${r.lbl}`,['Allowed per game',f1(r.a),'b'],['League average',f1(r.lg)],['Difference',pctS(r.a/r.lg),r.a>=r.lg?'up':'dn'],['Rank',`${ord(r.rk)} of ${NT}`],'~'+(r.rk<=NT/3?'One of the softer spots in the league for this.':r.rk>2*NT/3?'One of the tougher spots in the league for this.':'Roughly middle of the pack.')))}"><div class="txt"><b>${f1(r.a)}</b> ${esc(r.lbl)} allowed per game to ${pos}<small>${ord(r.rk)} of ${NT} · ${r.place} · league avg ${f1(r.lg)} (${r.d>=0?'+':''}${f1(r.d)})</small></div>
     <div><div class="track"><i data-x="${((NT-r.rk)/(NT-1)*100).toFixed(1)}"></i></div><div class="ends"><span>Toughest</span><span>Softest</span></div></div></div>`).join('')}`;
 }
 
@@ -556,7 +586,8 @@ const leagueAllowed=(b,fn)=>mean(defGames(b).map(x=>x.rows.reduce((a,r)=>a+fn(r)
 function nextCtx(){const ng=nextGame(P.t);if(!ng)return null;const home=ng[1]===P.t,opp=home?ng[2]:ng[1];
   return {ng,home,opp,rb:cfg().restB(restFor(P.t,ng)),orb:cfg().restB(restFor(opp,ng))}}
 
-function flagTip(flag,i,isOwn){
+function flagTip(flag,i,isOwn){const t_=flagTip0(flag,i,isOwn);return t_?T(flag[0].toUpperCase()+flag.slice(1)+': '+i.n,t_):''}
+function flagTip0(flag,i,isOwn){
   const s=(i.s||'').toLowerCase(),pos=cfg().posName[P.b]||'players';
   if(isOwn){
     if(flag==='same position')return `${i.n} plays his position and is ${s}. If he sits, more minutes, shots or touches could flow to ${P.n}.`;
@@ -578,12 +609,13 @@ function renderSplits(){
     return `<tr class="${now?'now':''}" tabindex="0" data-tip="${esc(tip(x,d))}"><td>${esc(labels[key])}${now?'<span class="nowtag">next game</span>':''}</td><td>${f1(x.avg)}</td><td class="${key==='all'?'':d>=0?'up':'dn'}">${key==='all'?'':(d>=0?'+':'')+f1(d)}</td><td>${x.n}</td></tr>`};
   const myNow=k=>nc&&((k==='home'&&nc.home)||(k==='away'&&!nc.home)||k===nc.rb);
   let h=`<h2>Situational splits</h2><p class="sub">${esc(label)} by situation. His games since ${c.seasonLbl(curSeason()-1)}; the defense from this season only. Rows marked "next game" apply to his next game.</p><div class="splits"><div><h3>${esc(P.n)}</h3><table class="sp"><thead><tr><th>Situation</th><th>Avg</th><th>vs overall</th><th>G</th></tr></thead><tbody>`;
-  h+=sitKeys().map(k=>row(me,k,lab,myNow(k),(x,d)=>k==='all'?`He averages ${f1(x.avg)} ${sl} over ${x.n} games since ${c.seasonLbl(curSeason()-1)}.`:`${lab[k]}: ${f1(x.avg)} ${sl} over ${x.n} games, ${Math.abs(d)<.05?'the same as':d>0?`${f1(d)} more than`:`${f1(-d)} fewer than`} his overall average.${x.n<5?'\nSmall sample, read it loosely.':''}`)).join('')+'</tbody></table></div>';
+  const lw=LOWER.has(st.stat);
+  h+=sitKeys().map(k=>row(me,k,lab,myNow(k),(x,d)=>k==='all'?T(`${P.n}: overall`,[label,f1(x.avg),'b'],['Games',x.n],`~Since ${c.seasonLbl(curSeason()-1)}.`):T(`${lab[k]}`,[label,f1(x.avg),'b'],['vs his overall',sgn(d),Math.abs(d)<.05?'':(d>0)!==lw?'up':'dn'],['Games',x.n],x.n<5?'~Small sample, read it loosely.':null))).join('')+'</tbody></table></div>';
   if(P.b&&st.opp!=null){
     const o=D.teams[st.opp],ds=defSplit(st.opp,P.b,fn),la=leagueAllowed(P.b,fn),pos=c.posName[P.b],isNext=nc&&nc.opp===st.opp;
     const oNow=k=>isNext&&((k==='home'&&!nc.home)||(k==='away'&&nc.home)||k===nc.orb);
     h+=`<div><h3>What the ${esc(nick(o))} allow to ${esc(pos)}</h3><table class="sp"><thead><tr><th>Situation</th><th>Per game</th><th>vs overall</th><th>G</th></tr></thead><tbody>`;
-    h+=sitKeys().map(k=>row(ds,k,olab,oNow(k),(x,d)=>k==='all'?`The ${o.n} allow ${f1(x.avg)} ${sl} per game to ${pos} this season, ${pctS(x.avg/la)} vs the ${f1(la)} league average.`:`${olab[k]}: they allow ${f1(x.avg)} to ${pos} over ${x.n} games, ${Math.abs(d)<.05?'the same as':d>0?`${f1(d)} more than`:`${f1(-d)} less than`} usual.${x.n<4?'\nSmall sample.':''}`)).join('');
+    h+=sitKeys().map(k=>row(ds,k,olab,oNow(k),(x,d)=>k==='all'?T(`${o.n} vs ${pos}`,[`${label} allowed`,f1(x.avg),'b'],['League average',f1(la)],['Difference',pctS(x.avg/la),(x.avg>=la)!==lw?'up':'dn'],['Games',x.n]):T(`${nick(o)} ${olab[k].toLowerCase()}`,[`${label} allowed`,f1(x.avg),'b'],['vs their usual',sgn(d),Math.abs(d)<.05?'':(d>0)!==lw?'up':'dn'],['Games',x.n],'~Green means more allowed, which helps him.',x.n<4?'~Small sample.':null))).join('');
     h+=`<tr class="lgavg"><td>League average</td><td>${f1(la)}</td><td></td><td></td></tr></tbody></table></div>`;
   }
   $('splitBox').innerHTML=h+'</div>';
@@ -600,11 +632,11 @@ function project(sd,nc){
   const ws=comps.reduce((a,x)=>a+x[2],0),base=comps.reduce((a,x)=>a+x[1]*x[2],0)/ws;
   let f=1;const adj=[],win=playerWin(),me=splitOf(win,fn,r=>r[1]),all=me.all.avg,o=D.teams[nc.opp];
   if(P.b){const ds=defSplit(nc.opp,P.b,fn),la=leagueAllowed(P.b,fn);
-    if(ds.all.n>=4&&la>0){const m=clamp(1+.5*(ds.all.avg/la-1),.85,1.15);f*=m;adj.push(`Matchup ${pctS(m)}: the ${nick(o)} allow ${f1(ds.all.avg)} per game to ${c.posName[P.b]} vs a ${f1(la)} league average.`)}
-    if(nc.orb&&ds[nc.orb].n>=3&&ds.all.avg>0){const m=clamp(1+.5*(ds[nc.orb].avg/ds.all.avg-1),.94,1.06);if(Math.abs(m-1)>.004){f*=m;adj.push(`Their rest, ${c.restLbl[nc.orb].toLowerCase()}, ${pctS(m)}: they allow ${f1(ds[nc.orb].avg)} in that spot vs ${f1(ds.all.avg)} normally.`)}}}
+    if(ds.all.n>=4&&la>0){const m=clamp(1+.5*(ds.all.avg/la-1),.85,1.15);f*=m;adj.push(['Matchup',pctS(m),m>=1?'up':'dn',`the ${nick(o)} allow ${f1(ds.all.avg)} per game to ${c.posName[P.b]} vs a ${f1(la)} league average.`])}
+    if(nc.orb&&ds[nc.orb].n>=3&&ds.all.avg>0){const m=clamp(1+.5*(ds[nc.orb].avg/ds.all.avg-1),.94,1.06);if(Math.abs(m-1)>.004){f*=m;adj.push([`Their rest (${c.restLbl[nc.orb].toLowerCase()})`,pctS(m),m>=1?'up':'dn',`they allow ${f1(ds[nc.orb].avg)} in that spot vs ${f1(ds.all.avg)} normally.`])}}}
   const lk=nc.home?'home':'away';
-  if(me[lk].n>=5&&all>0){const m=clamp(1+.5*(me[lk].avg/all-1),.94,1.06);if(Math.abs(m-1)>.004){f*=m;adj.push(`${nc.home?'Home':'Road'} game ${pctS(m)}: he averages ${f1(me[lk].avg)} ${nc.home?'at home':'on the road'} vs ${f1(all)} overall.`)}}
-  if(nc.rb&&me[nc.rb].n>=4&&all>0){const m=clamp(1+.5*(me[nc.rb].avg/all-1),.94,1.06);if(Math.abs(m-1)>.004){f*=m;adj.push(`${c.restLbl[nc.rb]} ${pctS(m)}: he averages ${f1(me[nc.rb].avg)} in that spot.`)}}
+  if(me[lk].n>=5&&all>0){const m=clamp(1+.5*(me[lk].avg/all-1),.94,1.06);if(Math.abs(m-1)>.004){f*=m;adj.push([nc.home?'Home game':'Road game',pctS(m),m>=1?'up':'dn',`he averages ${f1(me[lk].avg)} ${nc.home?'at home':'on the road'} vs ${f1(all)} overall.`])}}
+  if(nc.rb&&me[nc.rb].n>=4&&all>0){const m=clamp(1+.5*(me[nc.rb].avg/all-1),.94,1.06);if(Math.abs(m-1)>.004){f*=m;adj.push([c.restLbl[nc.rb],pctS(m),m>=1?'up':'dn',`he averages ${f1(me[nc.rb].avg)} in that spot.`])}}
   const proj=base*f,w=win.slice(-30),mu=mean(w.map(fn));
   const rs=mu>0?w.map(r=>fn(r)/mu).sort((a,b)=>a-b):[];
   const q=p=>rs.length?rs[Math.round(p*(rs.length-1))]:1;
@@ -627,7 +659,7 @@ function renderProj(){
   if(notes.length)h+=`<p class="pnote">${notes.join(' ')}</p>`;
   h+=`<div class="prow phd"><span></span><span>Floor</span><span>Standard</span><span>Upside</span><span class="pbar"></span></div>`;
   h+=rows.map(([sd,p],i)=>{
-    const tip=`${sd[1]}\nStarting point ${f1(p.base)}: ${p.comps.map(x=>`${x[0]} ${f1(x[1])}`).join(' · ')}\n${p.adj.length?p.adj.join('\n'):'No matchup or situation adjustments (not enough games to trust them).'}\nFloor and upside come from his last ${p.n} games.`;
+    const tip=T(`${sd[1]}: how we got ${f1(p.proj)}`,...p.comps.map(x=>[x[0][0].toUpperCase()+x[0].slice(1),f1(x[1])]),['Starting point',f1(p.base),'b'],...(p.adj.length?p.adj.flatMap(a=>[[a[0],a[1],a[2]],'~'+a[3]]):['~No matchup or situation adjustments (not enough games to trust them).']),['Floor · standard · upside',`${f1(p.floor)} · ${f1(p.proj)} · ${f1(p.up)}`,'b'],`~Floor and upside come from his last ${p.n} games.`);
     const mx=Math.max(p.up,p.rec,p.proj)*1.15||1,X=x=>(clamp(x/mx,0,1)*100).toFixed(1)+'%';
     return `<div class="prow${sd[0]===st.stat?' cur':''}" tabindex="0" data-tip="${esc(tip)}" style="--i:${i}"><span class="pk">${esc(sd[0]==='FPTS'?'Fantasy':sd[0])}</span><span class="num pf">${f1(p.floor)}</span><span class="num ps">${f1(p.proj)}</span><span class="num pu">${f1(p.up)}</span><span class="pbar"><i class="rng" style="left:${X(p.floor)};width:calc(${X(p.up)} - ${X(p.floor)})"></i><i class="avg" style="left:${X(p.rec)}"></i><i class="dot" style="left:${X(p.proj)}"></i></span></div>`}).join('');
   h+=`<p class="fine">A quick summary of the numbers on this page, not a guarantee. The dot is the standard projection, the shaded band runs floor to upside, and the thin line is his last-${c.projN} average.</p>`;
@@ -637,7 +669,8 @@ function renderProj(){
 // ---------------- hover / tap commentary
 const tipEl=document.createElement('div');tipEl.className='tip';tipEl.setAttribute('role','tooltip');document.body.appendChild(tipEl);
 let tipFor=null;
-function showTip(el){const t=el.getAttribute('data-tip');if(!t){hideTip();return}tipFor=el;tipEl.textContent=t;tipEl.classList.add('on');
+function tipHtml(t){const [title,...ls]=t.split('\n');return `<b class="tt">${esc(title)}</b>`+ls.map(l=>{if(l.startsWith('~'))return `<span class="tn">${esc(l.slice(1))}</span>`;const q=l.split('::');if(q.length>=2)return `<span class="tr ${esc(q[2]||'')}"><span>${esc(q[0])}</span><b>${esc(q[1])}</b></span>`;return `<span class="tp">${esc(l)}</span>`}).join('')}
+function showTip(el){const t=el.getAttribute('data-tip');if(!t){hideTip();return}tipFor=el;tipEl.innerHTML=tipHtml(t);tipEl.classList.add('on');
   const r=el.getBoundingClientRect(),w=tipEl.offsetWidth,h=tipEl.offsetHeight;
   const x=clamp(r.left+r.width/2-w/2,12,innerWidth-w-12);let y=r.top-h-10;if(y<72)y=Math.min(r.bottom+10,innerHeight-h-8);
   tipEl.style.left=x+'px';tipEl.style.top=y+'px'}
@@ -654,13 +687,13 @@ function renderTicket(){
   const home=ng[1]===P.t,oi=home?ng[2]:ng[1],me=D.teams[P.t],o=D.teams[oi],dt=new Date(ng[0]);
   document.documentElement.style.setProperty('--oc','#'+o.c);
   const chips=[],sd=statDef(),sl=sd[1].toLowerCase(),me_=splitOf(playerWin(),sd[2],r=>r[1]),c=cfg();
-  chips.push([home?'Home':'Away',false,me_.home.n&&me_.away.n?`He averages ${f1(me_.home.avg)} ${sl} at home (${me_.home.n} games) and ${f1(me_.away.avg)} on the road (${me_.away.n}) since ${c.seasonLbl(curSeason()-1)}.`:'']);
+  chips.push([home?'Home':'Away',false,me_.home.n&&me_.away.n?T(home?'Home game':'Road game',['At home',`${f1(me_.home.avg)} (${me_.home.n} g)`,home?'b':''],['On the road',`${f1(me_.away.avg)} (${me_.away.n} g)`,home?'':'b'],`~His ${sl} since ${c.seasonLbl(curSeason()-1)}.`):'']);
   const r1=restFor(P.t,ng),r2=restFor(oi,ng);
-  if(r1!=null&&r1>=0){const[a,hot]=c.rest(r1),rb=c.restB(r1),x=me_[rb];chips.push([a,hot,x&&x.n?`In this spot (${c.restLbl[rb].toLowerCase()}) he averages ${f1(x.avg)} ${sl} over ${x.n} games, vs ${f1(me_.all.avg)} overall.${x.n<5?' Small sample.':''}`:`No games in this rest spot to compare yet.`])}
-  if(r2!=null&&r2>=0){const[a,hot]=c.rest(r2);if(hot){const rb=c.restB(r2),ds=P.b?defSplit(oi,P.b,sd[2]):null,x=ds&&ds[rb];chips.push([`${nick(o)}: ${a.toLowerCase()}`,true,x&&x.n?`On ${c.restLbl[rb].toLowerCase()} this season the ${nick(o)} allow ${f1(x.avg)} ${sl} to ${c.posName[P.b]} (${x.n} games) vs ${f1(ds.all.avg)} normally. Tired legs on defense can help.`:`The ${nick(o)} are on ${c.restLbl[rb].toLowerCase()}, which can mean tired legs on defense.`])}}
-  const t=P.b?tierOf(oi):null;if(t)chips.push([`${t[0]} vs ${c.posName[P.b]}`,/favorable/i.test(t[0]),`Combines where the ${nick(o)} rank in what they allow to ${c.posName[P.b]} this season. The matchup section below breaks it down.`]);
-  const oinj=injFor(oi);if(oinj){const ls=oinj.filter(i=>/^out|reserve/i.test(i.s));if(ls.length)chips.push([`${nick(o)}: ${ls.length} out`,false,'Out: '+ls.map(i=>`${i.n} (${i.p})`).join(', ')])}
-  const minj=injFor(P.t);if(minj){const ls=minj.filter(i=>/^out|reserve/i.test(i.s)&&norm(i.n)!==norm(P.n));if(ls.length)chips.push([`${nick(me)}: ${ls.length} out`,false,'Out: '+ls.map(i=>`${i.n} (${i.p})`).join(', ')])}
+  if(r1!=null&&r1>=0){const[a,hot]=c.rest(r1),rb=c.restB(r1),x=me_[rb];chips.push([a,hot,x&&x.n?T(c.restLbl[rb],['In this spot',`${f1(x.avg)} (${x.n} g)`,x.avg>=me_.all.avg?'up':'dn'],['Overall',f1(me_.all.avg)],`~His ${sl}.`,x.n<5?'~Small sample.':null):T(c.restLbl[rb],'~No games in this rest spot to compare yet.')])}
+  if(r2!=null&&r2>=0){const[a,hot]=c.rest(r2);if(hot){const rb=c.restB(r2),ds=P.b?defSplit(oi,P.b,sd[2]):null,x=ds&&ds[rb];chips.push([`${nick(o)}: ${a.toLowerCase()}`,true,x&&x.n?T(`${nick(o)} on ${c.restLbl[rb].toLowerCase()}`,[`${sd[0]} allowed in this spot`,`${f1(x.avg)} (${x.n} g)`,x.avg>=ds.all.avg?'up':'dn'],['Normally',f1(ds.all.avg)],'~Tired legs on defense can help him.'):T(`${nick(o)} on ${c.restLbl[rb].toLowerCase()}`,'~Tired legs on defense can help him.')])}}
+  const t=P.b?tierOf(oi):null;if(t){const dv=D.dvp[P.b],NT=D.teams.length;chips.push([`${t[0]} vs ${c.posName[P.b]}`,/favorable/i.test(t[0]),T(`${t[0]} matchup`,...dv.k.map((k,i)=>{const rk=dv.rank[oi][i];return [c.dvpLbl[k]||k,`${ord(rk)} most allowed`,rk<=NT/3?'up':rk>2*NT/3?'dn':'']}),`~Where the ${nick(o)} rank among ${NT} teams in what they give up to ${c.posName[P.b]} this season.`)])}
+  const oinj=injFor(oi);if(oinj){const ls=oinj.filter(i=>/^out|reserve/i.test(i.s));if(ls.length)chips.push([`${nick(o)}: ${ls.length} out`,false,T(`${o.n}: out`,...ls.map(i=>[i.n,i.p]))])}
+  const minj=injFor(P.t);if(minj){const ls=minj.filter(i=>/^out|reserve/i.test(i.s)&&norm(i.n)!==norm(P.n));if(ls.length)chips.push([`${nick(me)}: ${ls.length} out`,false,T(`${me.n}: out`,...ls.map(i=>[i.n,i.p]))])}
   tk.hidden=false;
   tk.innerHTML=`<div class="face"><div>${logoImg(me)}<div class="lbl">${esc(me.a)}</div></div><div class="vsx">${home?'VS':'@'}</div><div>${logoImg(o)}<div class="lbl">${esc(o.a)}</div></div></div>
     <div class="when">Next game · ${esc(dt.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'}))} · ${esc(dt.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}))}</div>
@@ -687,7 +720,7 @@ function setPlayer(p){
   for(const el of $('tiles').querySelectorAll('.big')){const k=el.dataset.k,s=pc.stats.find(x=>x[0]===k),fn=s?s[2]:(r=>v(r,k));countUp(el,mean(cs.map(fn)))}
   $('tiles').title='';
   {const rec=played(p.g).slice(-cfg().projN);for(const el of $('tiles').querySelectorAll('.tile')){const k=el.querySelector('.big').dataset.k,s_=pc.stats.find(x=>x[0]===k),fn=s_?s_[2]:(r=>v(r,k)),a=mean(cs.map(fn)),b=mean(rec.map(fn)),d=a?(b-a)/a*100:0;
-    el.tabIndex=0;el.dataset.tip=`${s_?s_[1]:k}: ${f1(a)} per game in ${lbl} (${cs.length} games).\nLast ${rec.length}: ${f1(b)}, ${Math.abs(d)<5?'right in line with his season':d>0?`up ${Math.round(d)}% — running hot`:`down ${Math.round(-d)}% — cooler lately`}.`}}
+    el.tabIndex=0;el.dataset.tip=T(s_?s_[1]:k,['This season',`${f1(a)} (${cs.length} g)`],[`Last ${rec.length}`,f1(b),Math.abs(d)<5?'b':d>0?'up':'dn'],['Trend',`${d>=0?'+':''}${Math.round(d)}%`,Math.abs(d)<5?'':d>0?'up':'dn'],'~'+(Math.abs(d)<5?'Right in line with his season.':d>0?'Running hot lately.':'Cooler lately.'))}}
   $('opp').innerHTML=D.teams.map((tm,i)=>i===p.t?'':`<option value="${i}">${esc(tm.n)}</option>`).join('');
   if(st.opp!=null)$('opp').value=st.opp;
   $('q').value='';
@@ -707,10 +740,11 @@ function render(anim){
   $('recTitle').textContent=`${label}, ${rl}${st.loc==='home'?' at home':st.loc==='away'?' on the road':''}`;
   let sum=`<span><span class="big" id="avgBig">${f1(mean(vals))}</span> avg</span><span>median ${f1(median(vals))}</span><span>high ${vals.length?esc(fv(Math.max(...vals))):'–'}</span><span>low ${vals.length?esc(fv(Math.min(...vals))):'–'}</span><span>${pr.length} games${rows.length>pr.length?` (+${rows.length-pr.length} DNP)`:''}</span>`;
   if(st.mark!=null&&vals.length){const h=vals.filter(x=>x>=st.mark).length;sum+=`<span class="hit">${h} of ${vals.length} at or above ${esc(st.mark)} (${Math.round(h/vals.length*100)}%)</span>`}
+  if(vals.length)sum+=legend(mean(vals),'his average here');
   $('recSum').innerHTML=sum;if(anim)countUp($('avgBig'),mean(vals));
-  bars($('recSvg'),rows,false);
+  bars($('recSvg'),rows,false,mean(vals));
   $('recAvg').innerHTML=pr.length?pc.avgs(pr).map(([a,b])=>`<div><span class="big">${esc(b)}</span><small>${esc(a)}</small></div>`).join(''):'';
-  $('recTbl').innerHTML=logTable(rows,false);
+  $('recTbl').innerHTML=logTable(rows,false,mean(vals));
   renderSplits();renderMatchup();renderProj();
 }
 function renderMatchup(){
@@ -722,13 +756,14 @@ function renderMatchup(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const i of $('dvp').querySelectorAll('.track i'))i.style.left=i.dataset.x+'%'}));
   const vr=P.g.filter(r=>r[2]===st.opp),vp=played(vr),vv=vp.map(fn),all=played(P.g);
   $('histTitle').textContent=`His games against the ${o?nick(o):''}`;
-  $('histSub').textContent=`${vp.length} game${vp.length===1?'':'s'} since ${since()}${vr.length>vp.length?`, ${vr.length-vp.length} missed`:''}`;
+  $('histSub').innerHTML=`${vp.length} game${vp.length===1?'':'s'} since ${esc(since())}${vr.length>vp.length?`, ${vr.length-vp.length} missed`:''}${vp.length?' &nbsp; '+legend(mean(playerWin().map(fn)),'his usual'):''}`;
   const cmpKeys=[k,...pc.tiles.filter(x=>x!==k)].slice(0,5);
   $('vsCmp').innerHTML=vp.length?cmpKeys.map(kk=>{const s=pc.stats.find(x=>x[0]===kk),f=s?s[2]:(r=>v(r,kk)),a=mean(vp.map(f)),b=mean(all.map(f)),d=a-b;
     return `<div><span class="big">${f1(a)}</span><small>${esc(kk==='FPTS'?'Fantasy':kk)} vs them</small><small class="${d>=0?'up':'dn'}">${d>=0?'+':''}${f1(d)} vs his ${f1(b)} overall</small></div>`}).join('')+(st.mark!=null&&vv.length?`<div><span class="big" style="color:var(--acc)">${vv.filter(x=>x>=st.mark).length}/${vv.length}</span><small>${esc(k)} at or above ${esc(st.mark)}</small></div>`:''):'';
   $('vsFig').style.display=vp.length?'':'none';
-  if(vp.length)bars($('vsSvg'),vr,true);
-  $('vsTbl').innerHTML=vr.length?logTable(vr,true):`<tbody><tr><td class="empty">No games against the ${esc(o?o.n:'this team')} since ${esc(since())}.</td></tr></tbody>`;
+  const usual=mean(playerWin().map(fn));
+  if(vp.length)bars($('vsSvg'),vr,true,usual);
+  $('vsTbl').innerHTML=vr.length?logTable(vr,true,usual):`<tbody><tr><td class="empty">No games against the ${esc(o?o.n:'this team')} since ${esc(since())}.</td></tr></tbody>`;
 }
 
 // ---------------- search

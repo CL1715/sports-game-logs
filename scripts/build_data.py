@@ -176,6 +176,9 @@ def build_nba():
     sched = [[str(r.date), tix[int(r.home_id)], tix[int(r.away_id)]] for r in up.itertuples()
              if int(r.home_id) in tix and int(r.away_id) in tix]
     through = str(curbox.game_date.max()) if len(curbox) else str(box.game_date.max())
+    last = curbox.groupby("team_id").game_date.max().astype(str).to_dict()
+    for t in ids:
+        teams[t]["l"] = last.get(t, "")
     return {"league": "nba", "season": season, "through": through, "teams": [teams[t] for t in ids],
             "games": games_out, "cols": cols, "players": players, "sched": sched, "dvp": dvp}
 
@@ -271,6 +274,10 @@ def build_nfl():
         sched.append([t.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), tix[r.home_team], tix[r.away_team]])
     cur = st[st.season == season]
     through = f"Week {int(cur.week.max())}" if len(cur) else ""
+    cg = played[played.season == season]
+    for tm in teams:
+        ds = cg[(cg.home_team == tm["a"]) | (cg.away_team == tm["a"])].gameday
+        tm["l"] = str(ds.max()) if len(ds) else ""
     return {"league": "nfl", "season": season, "through": through, "teams": teams,
             "games": games_out, "cols": cols, "players": players, "sched": sched, "dvp": dvp}
 

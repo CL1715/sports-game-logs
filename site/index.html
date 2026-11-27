@@ -11,23 +11,23 @@
    IDEA: a printed scouting card — team-colour masthead with the matchup ticket, over agate game logs.
    PICTURE: the masthead matchup (team marks facing off) and the game-by-game bar strip.
    COLOUR and TYPE: white sheet / night court; the player's team colour leads, ink support, court orange as the one accent; Barlow Condensed figures + Barlow text.
-   LAYOUT: search bar, masthead with matchup ticket, game context (injuries + news), chart + log, then defense vs position and history. */
+   LAYOUT: search bar, slim masthead with averages, then two columns: stats + matchup on the left, matchup ticket, injuries and news in a sticky right rail. */
 :root{color-scheme:light dark;--bg:light-dark(#fff,#0f1115);--ink:light-dark(#14161a,#eceef2);--mut:light-dark(#646a73,#9aa1ab);--line:light-dark(#e3e5e9,#262a31);--soft:light-dark(#f4f5f7,#171a20);--card:light-dark(#fff,#14171d);--acc:#f26b1d;--good:light-dark(#1a7f37,#4ac26b);--warn:light-dark(#b26a00,#f0b429);--bad:light-dark(#c62828,#ff6b6b);--tc:#1d428a;--oc:#555;--tcb:light-dark(var(--tc),color-mix(in oklab,var(--tc) 50%,white));--tink:#fff;--ease:cubic-bezier(.2,.8,.2,1)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;overflow-x:clip}
 .band{padding:clamp(18px,3vw,36px) max(5vw,16px)}
-.wrap{max-width:1240px;margin:0 auto}
+.wrap{max-width:1440px;margin:0 auto}
 h1,h2,h3,.big,.chip,.num{font-family:"Barlow Condensed",Barlow,system-ui,sans-serif}
 svg{font-family:Barlow,system-ui,sans-serif}
 a{color:inherit}
 /* top bar */
 .top{position:sticky;top:0;z-index:30;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-block:12px}
-.top .wrap{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.top .wrap{max-width:1440px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .lg{display:flex;gap:2px;background:var(--soft);padding:3px;border-radius:999px;border:1px solid var(--line)}
 .lg .chip{min-height:40px;padding:0 16px;font-size:18px;border:0;background:transparent}
 .lg .chip[aria-pressed=true]{background:var(--ink);color:var(--bg)}
-.srch{position:relative;flex:1 1 300px;max-width:560px}
+.srch{position:relative;flex:1 1 180px;max-width:560px}
 .srch input{width:100%;font:16px Barlow,sans-serif;padding:11px 14px 11px 40px;border:1.5px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);min-height:46px;transition:border-color .2s,box-shadow .2s}
 .srch svg{position:absolute;left:13px;top:50%;translate:0 -50%;width:18px;height:18px;color:var(--mut)}
 .srch input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 4px color-mix(in oklab,var(--acc) 20%,transparent)}
@@ -41,14 +41,15 @@ a{color:inherit}
 /* masthead */
 .mast{position:relative;overflow:hidden;color:var(--tink);background:linear-gradient(120deg,var(--tc) 0%,color-mix(in oklab,var(--tc) 72%,black) 62%,color-mix(in oklab,var(--oc) 55%,black) 100%);transition:background .5s}
 .mast .wm{position:absolute;right:-60px;top:50%;translate:0 -50%;width:min(520px,70vw);opacity:.1;pointer-events:none;filter:grayscale(.2)}
-.mast .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;align-items:center}
+.mast{padding-block:clamp(16px,2.4vw,28px)}
+.mast .wrap{position:relative;max-width:1440px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,500px);gap:16px 28px;align-items:center}
 .who{display:flex;gap:18px;align-items:center}
 .mono{flex:none;width:clamp(76px,10vw,104px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:rgb(255 255 255/.12);border:3px solid rgb(255 255 255/.55);box-shadow:inset 0 -10px 24px rgb(0 0 0/.2);font:800 clamp(32px,4.5vw,46px)/1 "Barlow Condensed",sans-serif;letter-spacing:-.01em}
-h1{font-size:clamp(34px,5.6vw,52px);line-height:1.02;margin:0;font-weight:700;text-wrap:balance}
+h1{font-size:clamp(32px,4.4vw,48px);line-height:1.02;margin:0;font-weight:700;text-wrap:balance}
 .meta{opacity:.85;margin-top:4px}
 .stat-pill{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-weight:600;font-size:14px;padding:3px 10px;border-radius:999px;background:#fff;color:#111}
 .stat-pill i{width:8px;height:8px;border-radius:50%;background:var(--sc,#999)}
-.ticket{background:rgb(0 0 0/.22);border:1px solid rgb(255 255 255/.16);border-radius:16px;padding:16px 18px;backdrop-filter:blur(4px)}
+.ticket{color:var(--tink);background:linear-gradient(135deg,var(--tc),color-mix(in oklab,var(--tc) 55%,black) 60%,color-mix(in oklab,var(--oc) 70%,black));border-radius:16px;padding:16px 18px;box-shadow:0 10px 28px rgb(0 0 0/.18)}
 .face{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;text-align:center}
 .face img{width:clamp(54px,7vw,76px);height:clamp(54px,7vw,76px);object-fit:contain;filter:drop-shadow(0 6px 10px rgb(0 0 0/.3))}
 .face .lbl{font:700 18px "Barlow Condensed",sans-serif;margin-top:2px}
@@ -56,18 +57,23 @@ h1{font-size:clamp(34px,5.6vw,52px);line-height:1.02;margin:0;font-weight:700;te
 .logo-fb{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:50%;background:rgb(255 255 255/.15);font:800 22px "Barlow Condensed",sans-serif}
 .when{text-align:center;margin-top:8px;font-weight:500}
 .ctx{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
-.ctx span{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;background:rgb(255 255 255/.14)}
+.ctx span{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;background:rgb(255 255 255/.16)}
 .ctx span.hot{background:#fff;color:#111}
-.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:18px}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .tile{background:rgb(255 255 255/.1);border-radius:10px;padding:8px 10px}
 .tile .big{font-size:30px;line-height:1;font-weight:700}
 .tile small{display:block;opacity:.8;font-size:13px}
-/* context */
-.cx{background:var(--soft);border-bottom:1px solid var(--line)}
-.cxg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 10px;transition:translate .25s var(--ease),box-shadow .25s}
-.card:hover{translate:0 -2px;box-shadow:0 10px 24px rgb(0 0 0/.08)}
-.card h3{display:flex;align-items:center;gap:8px;font-size:21px;margin:0 0 8px}
+/* two-column layout */
+.layout{max-width:1440px;margin:0 auto;padding:clamp(16px,2.4vw,28px) max(4vw,16px) 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:24px;align-items:start}
+.col-main{display:flex;flex-direction:column;gap:24px}
+.col-side{display:flex;flex-direction:column;gap:14px}
+.blk{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(16px,2.2vw,26px)}
+.match{background:var(--soft)}
+.match .head{display:flex;gap:12px;align-items:end;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.match .head h2{display:flex;align-items:center;gap:10px}
+.match .head h2 img{width:40px;height:40px;object-fit:contain}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px 8px}
+.card h3{display:flex;align-items:center;gap:8px;font-size:20px;margin:0 0 6px}
 .card h3 img{width:24px;height:24px;object-fit:contain}
 .card h3 small{margin-left:auto;font:500 13px Barlow,sans-serif;color:var(--mut)}
 .inj{list-style:none;margin:0;padding:0}
@@ -111,8 +117,8 @@ h3{font-size:24px;line-height:1.1;margin:0;font-weight:700}
 .fig>svg{position:absolute;inset:0;width:100%;height:100%}
 .bar{transform-box:fill-box;transform-origin:bottom;transition:opacity .2s}
 .fig svg g:hover .bar{opacity:.78}
-.avgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:18px 0}
-.avgs div{background:var(--bg);padding:9px 11px}
+.avgs{display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:18px 0}
+.avgs div{flex:1 1 84px;background:var(--card);padding:9px 11px}
 .avgs .big{font-size:25px;font-weight:600;line-height:1.1;display:block}
 .avgs small{color:var(--mut);font-size:13px}
 .scroll{overflow-x:auto}
@@ -126,10 +132,6 @@ tr.dnp td{color:var(--mut)}
 .tag{font-size:11px;font-weight:600;color:var(--acc);margin-left:4px}
 .W{color:var(--good)}.L{color:var(--bad)}
 /* matchup */
-.vs{background:var(--soft);border-top:1px solid var(--line)}
-.vs .head{display:flex;gap:12px;align-items:end;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
-.vs .head h2{display:flex;align-items:center;gap:10px}
-.vs .head h2 img{width:40px;height:40px;object-fit:contain}
 .dvp{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,2.5vw,24px);margin-bottom:22px}
 .dvp .verdict{display:flex;gap:10px 14px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
 .pill{font:700 15px "Barlow Condensed",Barlow,sans-serif;padding:3px 10px;border-radius:999px;color:#fff}
@@ -149,9 +151,16 @@ tr.dnp td{color:var(--mut)}
 .foot{color:var(--mut);font-size:13px;border-top:1px solid var(--line)}
 .sk{display:inline-block;width:min(420px,70%);height:.9em;border-radius:8px;background:linear-gradient(90deg,rgb(255 255 255/.12),rgb(255 255 255/.3),rgb(255 255 255/.12));background-size:200% 100%;animation:sh 1.2s linear infinite}
 @keyframes sh{to{background-position:-200% 0}}
-@media(max-width:900px){.cxg{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cxg .card:last-child{grid-column:1/-1}}
-@media(max-width:760px){.mast .wrap{grid-template-columns:minmax(0,1fr)}.tile .big{font-size:24px}}
-@media(max-width:600px){.cxg{grid-template-columns:minmax(0,1fr)}#statGrp{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-inline:calc(-1*max(5vw,16px));padding-inline:max(5vw,16px)}table{font-size:13px}.fig{min-height:240px}.tile{padding:6px}.tile small{font-size:12px}.dvrow{grid-template-columns:minmax(0,1fr)}.who{gap:12px}.top .thru{display:none}}
+@media(max-width:1080px){
+  .mast .wrap{grid-template-columns:minmax(0,1fr)}
+  .layout{display:flex;flex-direction:column}
+  .col-main,.col-side{display:contents}
+  .stats{order:1}#ticket{order:2}#injOwn{order:3}#injOpp{order:4}#newsCard{order:5}.match{order:6}
+  .layout>*,.col-main>*,.col-side>*{width:100%}
+}
+@media(min-width:700px) and (max-width:1080px){.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#ticket,.stats,.match,#newsCard{grid-column:1/-1}}
+@media(max-width:760px){.tile .big{font-size:24px}}
+@media(max-width:600px){.blk{border-radius:14px;padding:14px}#statGrp{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-inline:-14px;padding-inline:14px}table{font-size:13px}.fig{min-height:240px}.tile{padding:6px}.tile small{font-size:12px}.dvrow{grid-template-columns:minmax(0,1fr)}.who{gap:12px}.top .thru{display:none}.lg .chip{padding:0 12px;font-size:16px}}
 @media(prefers-reduced-motion:no-preference){
   .in{animation:up .5s var(--ease) both}
   .in2{animation:up .5s .08s var(--ease) both}.in3{animation:up .5s .16s var(--ease) both}
@@ -184,52 +193,54 @@ tr.dnp td{color:var(--mut)}
 
 <div class="band mast" id="mast">
   <img class="wm" id="wm" alt="" hidden>
-  <div class="wrap">
-    <div id="whoBox">
-      <div class="who">
-        <div class="mono" id="mono"></div>
-        <div>
-          <h1 id="pname"><span class="sk"></span></h1>
-          <div class="meta" id="pmeta"></div>
-          <div id="pstat"></div>
-        </div>
+  <div class="wrap" id="whoBox">
+    <div class="who">
+      <div class="mono" id="mono"></div>
+      <div>
+        <h1 id="pname"><span class="sk"></span></h1>
+        <div class="meta" id="pmeta"></div>
+        <div id="pstat"></div>
       </div>
-      <div class="tiles" id="tiles"></div>
     </div>
-    <div class="ticket" id="ticket" hidden></div>
+    <div class="tiles" id="tiles"></div>
   </div>
 </div>
 
-<div class="band cx"><div class="wrap">
-  <div class="cxg" id="cx"></div>
-</div></div>
-
-<div class="band"><div class="wrap" id="recBox">
-  <div class="ctl"><div class="grp" id="statGrp" aria-label="Stat"></div></div>
-  <div class="ctl">
-    <div class="grp" id="rangeGrp"></div>
-    <div class="grp" id="locGrp"></div>
-    <label class="grp mark"><span>Mark a number</span><input id="mark" type="number" step="0.5" inputmode="decimal" placeholder="optional"></label>
-  </div>
-  <h2 id="recTitle">Recent games</h2>
-  <div class="sum" id="recSum"></div>
-  <div class="fig"><svg id="recSvg" role="img" aria-label="Game by game chart"></svg></div>
-  <div class="avgs" id="recAvg"></div>
-  <div class="scroll"><table id="recTbl"></table></div>
-</div></div>
-
-<div class="band vs"><div class="wrap">
-  <div class="head">
-    <div><h2 id="vsTitle">Matchup</h2><p class="sub" id="vsSub"></p></div>
-    <label class="grp"><span>Opponent</span><select id="opp" aria-label="Opponent"></select></label>
-  </div>
-  <div class="dvp" id="dvp"></div>
-  <h3 id="histTitle">His games against them</h3>
-  <p class="sub" id="histSub"></p>
-  <div class="cmp" id="vsCmp"></div>
-  <div class="fig" id="vsFig"><svg id="vsSvg" role="img" aria-label="Games against opponent chart"></svg></div>
-  <div class="scroll" style="margin-top:14px"><table id="vsTbl"></table></div>
-</div></div>
+<div class="layout">
+  <main class="col-main">
+    <section class="blk stats" id="recBox">
+      <div class="ctl"><div class="grp" id="statGrp" aria-label="Stat"></div></div>
+      <div class="ctl">
+        <div class="grp" id="rangeGrp"></div>
+        <div class="grp" id="locGrp"></div>
+        <label class="grp mark"><span>Mark a number</span><input id="mark" type="number" step="0.5" inputmode="decimal" placeholder="optional"></label>
+      </div>
+      <h2 id="recTitle">Recent games</h2>
+      <div class="sum" id="recSum"></div>
+      <div class="fig"><svg id="recSvg" role="img" aria-label="Game by game chart"></svg></div>
+      <div class="avgs" id="recAvg"></div>
+      <div class="scroll"><table id="recTbl"></table></div>
+    </section>
+    <section class="blk match">
+      <div class="head">
+        <div><h2 id="vsTitle">Matchup</h2><p class="sub" id="vsSub"></p></div>
+        <label class="grp"><span>Opponent</span><select id="opp" aria-label="Opponent"></select></label>
+      </div>
+      <div class="dvp" id="dvp"></div>
+      <h3 id="histTitle">His games against them</h3>
+      <p class="sub" id="histSub"></p>
+      <div class="cmp" id="vsCmp"></div>
+      <div class="fig" id="vsFig"><svg id="vsSvg" role="img" aria-label="Games against opponent chart"></svg></div>
+      <div class="scroll" style="margin-top:14px"><table id="vsTbl"></table></div>
+    </section>
+  </main>
+  <aside class="col-side" id="side">
+    <div class="ticket" id="ticket" hidden></div>
+    <div class="card" id="injOwn"></div>
+    <div class="card" id="injOpp" hidden></div>
+    <div class="card" id="newsCard"></div>
+  </aside>
+</div>
 
 <div class="band foot"><div class="wrap" id="foot"></div></div>
 
@@ -442,12 +453,14 @@ function newsCard(opp){
   if(!out.length)return h+`<p class="quiet">No recent team news.</p>`;
   return h+`<ul class="news">${out.slice(0,7).map(({a,tag,me})=>`<li><a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.h)}</a><small><span class="tg${me?' me':''}">${esc(tag)}</span>${esc(ago(a.t))}</small></li>`).join('')}</ul>`;
 }
-$('cx').addEventListener('click',e=>{const b=e.target.closest('[data-more]');if(!b)return;for(const li of $(b.dataset.more).querySelectorAll('li[hidden]'))li.hidden=false;b.remove()});
+$('side').addEventListener('click',e=>{const b=e.target.closest('[data-more]');if(!b)return;for(const li of $(b.dataset.more).querySelectorAll('li[hidden]'))li.hidden=false;b.remove()});
 
 function renderContext(){
   const ng=nextGame(P.t),opp=ng?(ng[1]===P.t?ng[2]:ng[1]):null;
-  $('cx').innerHTML=`<div class="card in">${injCard(P.t,true)}</div>`+(opp!=null?`<div class="card in2">${injCard(opp,false)}</div>`:'')+`<div class="card in3">${newsCard(opp)}</div>`;
-  // player status pill
+  $('injOwn').innerHTML=injCard(P.t,true);
+  $('injOpp').hidden=opp==null;if(opp!=null)$('injOpp').innerHTML=injCard(opp,false);
+  $('newsCard').innerHTML=newsCard(opp);
+  for(const[id,c]of[['injOwn','in'],['injOpp','in2'],['newsCard','in3']])replay($(id),c);
   const mi=N?myInjury():null;
   $('pstat').innerHTML=mi?`<span class="stat-pill" style="--sc:${SCOL(mi.s)}"><i></i>${esc(mi.s)}${mi.w?' · '+esc(mi.w):''}</span>`:'';
   renderTicket();
@@ -585,7 +598,7 @@ $('lgGrp').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b&&
 fetch('news.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null).then(n=>{N=n||{updated:null};if(P)renderContext()});
 function load(lg){
   L=lg;for(const b of $('lgGrp').querySelectorAll('.chip'))b.setAttribute('aria-pressed',b.dataset.v===L);
-  $('q').placeholder=`Search any ${cfg().name} player…  ( / )`;$('thru').textContent='Loading…';
+  $('q').placeholder=`Search any ${cfg().name} player…`;$('thru').textContent='Loading…';
   const sv=saved[L]||{};st={stat:sv.stat||null,range:sv.range||cfg().defRange,loc:sv.loc||'all',mark:null,opp:null};
   const go=d=>{
     if(L!==lg)return;D=d;C={};d.cols.forEach((k,i)=>C[k]=i+7);

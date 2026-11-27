@@ -161,14 +161,14 @@ tr.dnp td{color:var(--mut)}
 .rrow::before,.fav::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:2px;background:var(--tcb);opacity:0;transition:opacity .2s}
 .rrow:hover::before,.fav:hover::before{opacity:1}
 .tape{display:flex;flex-direction:column;gap:2px}
-.tape-h{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;margin-bottom:6px;font:700 18px "Barlow Condensed",sans-serif}
-.tape-h span:last-child{text-align:right}.tape-h img{width:28px;height:28px;object-fit:contain;vertical-align:middle;margin:0 6px}
-.tape-row{display:grid;grid-template-columns:64px minmax(0,1fr) 150px minmax(0,1fr) 64px;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
-.tv{font:600 18px "Barlow Condensed",sans-serif;color:var(--mut);font-variant-numeric:tabular-nums}.tv.r{text-align:right}.tv.win{color:var(--ink);font-weight:800}
+.tape-h{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);align-items:center;gap:10px;margin-bottom:6px;font:700 20px "Barlow Condensed",sans-serif}
+.tape-h span:first-child{text-align:right}.tape-h .logo-fb{width:28px;height:28px;font-size:11px;margin:0 6px;vertical-align:middle}.tape-h .tvs{text-align:center;color:var(--mut);font-size:16px}.tape-h img{width:28px;height:28px;object-fit:contain;vertical-align:middle;margin:0 6px}
+.tape-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 150px 64px minmax(0,1fr);align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.tv{font:600 19px "Barlow Condensed",sans-serif;color:var(--mut);font-variant-numeric:tabular-nums}.tv.l{text-align:right}.tv.r{text-align:left}.tv.win{color:var(--ink);font-weight:800}
 .tl{text-align:center;font-size:13px;color:var(--mut);font-weight:600}
 .tb{height:10px;border-radius:5px;background:var(--soft);overflow:hidden;display:flex}.tb.l{justify-content:flex-end}
 .tb i{display:block;height:100%;border-radius:5px;background:var(--ac);opacity:.45;transition:opacity .2s}.tb.r i{background:var(--hc)}.tb i.win{opacity:1}
-@media(max-width:640px){.tape-row{grid-template-columns:46px minmax(0,1fr) 92px minmax(0,1fr) 46px;gap:6px}.tl{font-size:12px}.hero .art{opacity:.12}}
+@media(max-width:640px){.tape-row{grid-template-columns:minmax(0,1fr) 44px 92px 44px minmax(0,1fr);gap:6px}.tape-h{grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr)}.tl{font-size:12px}.hero .art{opacity:.12}}
 .sk2{border-radius:14px;background:linear-gradient(90deg,var(--soft),var(--line),var(--soft));background-size:200% 100%;animation:sh 1.2s linear infinite}
 @media(prefers-reduced-motion:no-preference){
   html{scroll-behavior:smooth}
@@ -1157,8 +1157,8 @@ function tape(a,h){
   const M=L==='nba'?[['Points scored',s=>s.pf],['Points allowed',s=>s.pa,1],['Field goal att',s=>s.f('FGA')],['3-pointers made',s=>s.f('3PM')],['3-point att',s=>s.f('3PA')],['Free throw att',s=>s.f('FTA')],['Assists',s=>s.f('AST')],['Rebounds',s=>s.f('REB')],['Opp 3PM allowed',s=>s.a('3PM'),1],['Turnovers',s=>s.f('TO'),1]]
     :[['Points scored',s=>s.pf],['Points allowed',s=>s.pa,1],['Pass attempts',s=>s.f('ATT')],['Pass yards',s=>s.f('PYD')],['Rush attempts',s=>s.f('CAR')],['Rush yards',s=>s.f('RYD')],['Pass rate %',s=>{const x=s.f('ATT'),y=s.f('CAR');return x+y?x/(x+y)*100:NaN},2],['Pass yds allowed',s=>s.a('PYD'),1],['Rush yds allowed',s=>s.a('RYD'),1],['Sacks made',s=>s.a('SK')],['Interceptions',s=>s.a('INT')]];
   const rows=M.map(([lbl,f,lower])=>{const x=f(sa),y=f(sh),mx=Math.max(x,y)||1,neutral=lower===2,aw=neutral?false:lower?x<y:x>y,hw=neutral?false:lower?y<x:y>x;
-    return `<div class="tape-row"><span class="tv ${aw?'win':''}">${f1(x)}</span><span class="tb l"><i class="${aw?'win':''}" style="width:${(x/mx*100).toFixed(1)}%"></i></span><span class="tl">${esc(lbl)}</span><span class="tb r"><i class="${hw?'win':''}" style="width:${(y/mx*100).toFixed(1)}%"></i></span><span class="tv r ${hw?'win':''}">${f1(y)}</span></div>`}).join('');
-  return `<h2>Tale of the tape</h2><p class="sub">Per game this season. The stronger side of each row is solid${L==='nfl'?'; pass rate just shows style':''}.</p><div class="tape"><div class="tape-h"><span>${logoImg(D.teams[a])}${esc(D.teams[a].a)}</span><span></span><span>${esc(D.teams[h].a)}${logoImg(D.teams[h])}</span></div>${rows}</div>`;
+    return `<div class="tape-row"><span class="tb l"><i class="${aw?'win':''}" style="width:${(x/mx*100).toFixed(1)}%"></i></span><span class="tv l ${aw?'win':''}">${f1(x)}</span><span class="tl">${esc(lbl)}</span><span class="tv r ${hw?'win':''}">${f1(y)}</span><span class="tb r"><i class="${hw?'win':''}" style="width:${(y/mx*100).toFixed(1)}%"></i></span></div>`}).join('');
+  return `<h2>Tale of the tape</h2><p class="sub">Per game this season. The stronger side of each row is solid${L==='nfl'?'; pass rate just shows style':''}.</p><div class="tape"><div class="tape-h"><span>${esc(D.teams[a].a)}${logoImg(D.teams[a])}</span><span class="tvs">@</span><span>${logoImg(D.teams[h])}${esc(D.teams[h].a)}</span></div>${rows}</div>`;
 }
 
 // ---------------- start

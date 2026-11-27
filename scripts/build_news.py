@@ -135,7 +135,9 @@ def league(lg):
                 w = ev.get("weather") or comp.get("weather") or {}
                 venue = comp.get("venue") or {}
                 out["wx"][f"{side['away']}@{side['home']}"] = {
-                    "t": w.get("temperature") or w.get("highTemperature"), "d": w.get("displayValue") or "",
+                    "t": w.get("temperature") or w.get("highTemperature"),
+                    "d": next((str(x) for x in (w.get("displayValue"), w.get("conditionId"))
+                               if x and not str(x).isdigit()), ""),
                     "in": bool(venue.get("indoor")), "v": venue.get("fullName") or ""}
         except Exception as e:  # noqa: BLE001
             print("  scoreboard parse failed:", e)

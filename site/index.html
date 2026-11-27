@@ -287,6 +287,24 @@ td.tc{font-weight:700}
 .dvrow[data-tip]:hover{background:var(--soft);border-radius:8px}
 /* matchup */
 .dvp{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,2.5vw,24px);margin-bottom:22px}
+.mu-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 18px;border-radius:14px;margin-bottom:14px;background:var(--soft);border-left:6px solid var(--mut)}
+.mu-head.v-great,.mu-head.v-good{background:color-mix(in oklab,var(--good) 10%,var(--card));border-left-color:var(--good)}
+.mu-head.v-tough,.mu-head.v-vtough{background:color-mix(in oklab,var(--bad) 9%,var(--card));border-left-color:var(--bad)}
+.mu-head small{color:var(--mut);font-weight:600;font-size:13px}.mu-head h3{font-size:30px;margin:2px 0 4px}.mu-head p{margin:0;max-width:62ch}
+.mu-big{text-align:right}.mu-big b{display:block;font:800 44px/1 "Barlow Condensed",sans-serif}.mu-big small{color:var(--mut);font-size:13px}
+.v-great .mu-big b,.v-good .mu-big b{color:var(--good)}.v-tough .mu-big b,.v-vtough .mu-big b{color:var(--bad)}
+.mu-sel{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;padding:12px 14px;border:1px dashed var(--line);border-radius:12px;margin-bottom:14px}
+.mu-sel .num{font:800 28px/1 "Barlow Condensed",sans-serif}.mu-sel small{color:var(--mut)}
+.mu-chip{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.mu-chip.good{background:color-mix(in oklab,var(--good) 16%,transparent);color:var(--good)}.mu-chip.bad{background:color-mix(in oklab,var(--bad) 14%,transparent);color:var(--bad)}.mu-chip.mut{background:var(--soft);color:var(--mut)}
+.mu-sel .mu-chip{margin-left:auto}
+.mu-t th,.mu-t td{text-align:right}.mu-t th:first-child,.mu-t td:first-child{text-align:left}.mu-t th:last-child,.mu-t td:last-child{text-align:right}
+.mu-t td.num{font:600 17px "Barlow Condensed",sans-serif}.mu-t td small{color:var(--mut);font-family:Barlow,sans-serif;font-size:12px}.mu-t td.up{color:var(--good)}.mu-t td.dn{color:var(--bad)}.mu-t .mutd{color:var(--mut)}
+.mu-t tr[data-tip]{cursor:help}
+.plain{margin:4px 0 6px;font-size:16px;max-width:70ch}.plain .up{color:var(--good)}.plain .dn{color:var(--bad)}
+.mu-foot{font-size:13px;color:var(--mut);margin:10px 0 0}
+.mu-note{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:color-mix(in oklab,var(--acc) 9%,transparent);border-left:3px solid var(--acc);font-size:14px}
+@media(max-width:600px){.mu-head{grid-template-columns:minmax(0,1fr)}.mu-big{text-align:left}.mu-sel .mu-chip{margin-left:0}}
 .dvp .verdict{display:flex;gap:10px 14px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
 .pill{font:700 15px "Barlow Condensed",Barlow,sans-serif;padding:3px 10px;border-radius:999px;color:#fff}
 .dvp p{margin:6px 0 14px;max-width:70ch}
@@ -395,6 +413,7 @@ td.tc{font-weight:700}
       </div>
       <div class="dvp" id="dvp"></div>
       <h3 id="histTitle">His games against them</h3>
+  <p class="plain" id="histPlain"></p>
       <p class="sub" id="histSub"></p>
       <div class="cmp" id="vsCmp"></div>
       <div class="fig" id="vsFig"><svg id="vsSvg" role="img" aria-label="Games against opponent chart"></svg></div>
@@ -658,28 +677,41 @@ function renderContext(){
 }
 
 // ---------------- defense vs position
-function tierOf(t){const dv=D.dvp&&D.dvp[P.b];if(!dv||!dv.n[t])return null;const r=dv.rank[t];if(r.some(x=>x==null))return null;const n=D.teams.length;return tier(mean(r.map(x=>(x-1)/(n-1))))}
-function tier(p){return p<.15?['Very favorable','var(--good)']:p<.35?['Favorable','color-mix(in oklab,var(--good) 70%,var(--mut))']:p<.65?['Neutral','var(--mut)']:p<.85?['Tough','color-mix(in oklab,var(--bad) 75%,var(--mut))']:['Very tough','var(--bad)']}
+// Plain-language matchup verdict: compares what a defense allows to a position against the league average.
+function verdictOf(pct){return pct>=.08?['Great matchup','good','v-great']:pct>=.03?['Good matchup','good','v-good']:pct<=-.08?['Very tough matchup','bad','v-vtough']:pct<=-.03?['Tough matchup','bad','v-tough']:['Average matchup','mut','v-avg']}
+function matchupOf(t,b){
+  const dv=D.dvp&&D.dvp[b];if(!dv||!dv.n[t]||dv.rank[t].some(x=>x==null))return null;
+  const rows=dv.k.map((k,i)=>({k,a:dv.avg[t][i],lg:dv.lg[i],rk:dv.rank[t][i],pct:dv.lg[i]?dv.avg[t][i]/dv.lg[i]-1:0}));
+  // overall verdict rides on the all-in-one stat: pts+reb+ast (NBA) or PPR fantasy points (NFL)
+  const sum=rows.find(r=>r.k==='PRA'||r.k==='FPTS'),pct=sum?sum.pct:mean(rows.map(r=>r.pct));
+  return {rows,pct,sum,n:dv.n[t],v:verdictOf(pct)};
+}
+function tierOf(t){const m=P.b?matchupOf(t,P.b):null;return m?[m.v[0],m.v[1]==='good'?'var(--good)':m.v[1]==='bad'?'var(--bad)':'var(--mut)']:null}
+const rate=pct=>pct>=.05?['Good for him','good']:pct<=-.05?['Bad for him','bad']:['About even','mut'];
 function dvpHtml(){
-  const c=cfg(),b=P.b,dv=D.dvp&&D.dvp[b],o=D.teams[st.opp];
-  if(!dv||!o)return `<p class="empty">No position matchup data for this player.</p>`;
-  const NT=D.teams.length,t=st.opp,ranks=dv.rank[t];
-  if(!dv.n[t]||ranks.some(x=>x==null))return `<p class="empty">The ${esc(o.n)} haven't played yet this season.</p>`;
-  const pos=c.posName[b],lgN=c.name;
-  const rows=dv.k.map((_,i)=>{const rk=ranks[i],a=dv.avg[t][i],lg=dv.lg[i],lbl=c.dvpLbl[dv.k[i]]||dv.k[i];
-    const place=rk<=NT/2?`${rk===1?'the most':`the ${ord(rk)}-most`} in the ${lgN}`:`${rk===NT?'the fewest':`the ${ord(NT+1-rk)}-fewest`} in the ${lgN}`;
-    return {rk,lbl,a,lg,place,d:a-lg}});
-  const[tl,tc]=tier(mean(ranks.map(r=>(r-1)/(NT-1))));
-  const soft=rows.reduce((a,r)=>r.rk<a.rk?r:a),hard=rows.reduce((a,r)=>r.rk>a.rk?r:a);
-  let para=`Across ${dv.n[t]} games this season, the ${esc(o.n)} have been a <b>${tl.toLowerCase()}</b> matchup for ${pos}. `;
-  para+=soft.rk<=NT/2?`Their weak spot is ${esc(soft.lbl)}: they allow ${f1(soft.a)} per game, ${soft.place}. `:`They're stingy across the board; even their softest area, ${esc(soft.lbl)}, ranks ${ord(soft.rk)} of ${NT}. `;
-  if(hard.rk>NT/2&&hard!==soft)para+=`They're toughest on ${esc(hard.lbl)}, allowing ${f1(hard.a)}, ${hard.place}.`;
-  const oppInj=injFor(t);
-  if(oppInj){const rel=oppInj.filter(i=>cfg().oppFlag(i.p,P)&&!/^prob/i.test(i.s));if(rel.length)para+=` Keep in mind they're missing or monitoring ${rel.slice(0,3).map(i=>`${esc(i.n)} (${esc(i.p)}, ${esc(i.s.toLowerCase())})`).join(', ')}${rel.length>3?` and ${rel.length-3} more`:''}, so these numbers may understate how soft they are right now.`}
-  return `<div class="verdict"><h3>How the ${esc(nick(o))} defend ${pos}</h3><span class="pill" style="background:${tc}">${tl}</span></div>
-  <p>${para}</p>
-  ${rows.map(r=>`<div class="dvrow" tabindex="0" data-tip="${esc(T(`${nick(o)} vs ${pos}: ${r.lbl}`,['Allowed per game',f1(r.a),'b'],['League average',f1(r.lg)],['Difference',pctS(r.a/r.lg),r.a>=r.lg?'up':'dn'],['Rank',`${ord(r.rk)} of ${NT}`],'~'+(r.rk<=NT/3?'One of the softer spots in the league for this.':r.rk>2*NT/3?'One of the tougher spots in the league for this.':'Roughly middle of the pack.')))}"><div class="txt"><b>${f1(r.a)}</b> ${esc(r.lbl)} allowed per game to ${pos}<small>${ord(r.rk)} of ${NT} · ${r.place} · league avg ${f1(r.lg)} (${r.d>=0?'+':''}${f1(r.d)})</small></div>
-    <div><div class="track"><i data-x="${((NT-r.rk)/(NT-1)*100).toFixed(1)}"></i></div><div class="ends"><span>Toughest</span><span>Softest</span></div></div></div>`).join('')}`;
+  const c=cfg(),b=P.b,o=D.teams[st.opp];
+  if(!b||!o)return `<p class="empty">No position matchup data for this player.</p>`;
+  const m=matchupOf(st.opp,b);if(!m)return `<p class="empty">The ${esc(o.n)} haven't played yet this season.</p>`;
+  const pos=c.posName[b],NT=D.teams.length,nk=nick(o),[vl,vc]=m.v,pp=Math.round(Math.abs(m.pct)*100);
+  const lbl=k=>c.dvpLbl[k]||k;
+  const best=m.rows.reduce((x,y)=>y.pct>x.pct?y:x),worst=m.rows.reduce((x,y)=>y.pct<x.pct?y:x);
+  const P_=pos[0].toUpperCase()+pos.slice(1),sl=m.sum?lbl(m.sum.k):'production';
+  let line=vc==='good'?`${P_} get about <b>${pp}% more ${esc(sl)}</b> against the ${esc(nk)} than against an average defense.`
+    :vc==='bad'?`${P_} get about <b>${pp}% fewer ${esc(sl)}</b> against the ${esc(nk)} than against an average defense.`
+    :`${P_} get about the same ${esc(sl)} against the ${esc(nk)} as against an average defense${pp?` (${m.pct>=0?'+':'−'}${pp}%)`:''}.`;
+  if(best.pct>=.05)line+=` Their weakest area is <b>${esc(lbl(best.k))}</b> (${Math.round(best.pct*100)}% above average).`;
+  if(worst.pct<=-.05)line+=` They're strongest at limiting <b>${esc(lbl(worst.k))}</b> (${Math.round(-worst.pct*100)}% below average).`;
+  // the stat currently selected, in plain words
+  const sd=statDef(),ds=defSplit(st.opp,b,sd[2]),dr=m.rows.find(r=>r.k===sd[0]),la=dr?dr.lg:leagueAllowed(b,sd[2]);if(dr)ds.all.avg=dr.a;
+  const selPct=la>0&&ds.all.n?ds.all.avg/la-1:null,[sr,sc]=selPct==null?['','']:rate(LOWER.has(sd[0])?-selPct:selPct);
+  const sel=selPct==null?'':`<div class="mu-sel"><span>For <b>${esc(sd[1].toLowerCase())}</b> specifically</span><b class="num">${f1(ds.all.avg)}</b><small>allowed per game to ${esc(pos)} vs ${f1(la)} for an average team</small><span class="mu-chip ${sc}">${sr}</span></div>`;
+  const oppInj=injFor(st.opp);let inj='';
+  if(oppInj){const rel=oppInj.filter(i=>cfg().oppFlag(i.p,P)&&!/^prob/i.test(i.s));if(rel.length)inj=`<p class="mu-note">Also: the ${esc(nk)} are missing or monitoring ${rel.slice(0,3).map(i=>`<b>${esc(i.n)}</b> (${esc(i.p)}, ${esc(i.s.toLowerCase())})`).join(', ')}${rel.length>3?` and ${rel.length-3} more`:''}. That isn't reflected in these season numbers, so the matchup may be easier than it looks.</p>`}
+  const table=`<table class="mu-t"><thead><tr><th>Stat</th><th>${esc(pos[0].toUpperCase()+pos.slice(1))} get vs ${esc(nk)}</th><th>vs an average team</th><th>Difference</th><th>For him</th></tr></thead><tbody>${m.rows.map(r=>{const[rl,rc]=rate(r.pct);
+    return `<tr tabindex="0" data-tip="${esc(T(`${lbl(r.k)}: ${nk} vs ${pos}`,[`Allowed per game`,f1(r.a),'b'],['Average team allows',f1(r.lg)],['Difference',`${r.a-r.lg>=0?'+':''}${f1(r.a-r.lg)} (${pctS(1+r.pct)})`,rc==='good'?'up':rc==='bad'?'dn':''],['League rank',`${ord(r.rk)} most of ${NT}`],'~Rank 1 means they give up the most, the easiest matchup.'))}"><td>${esc(lbl(r.k)[0].toUpperCase()+lbl(r.k).slice(1))}</td><td class="num">${f1(r.a)}</td><td class="num mutd">${f1(r.lg)}</td><td class="num ${rc==='good'?'up':rc==='bad'?'dn':''}">${r.a-r.lg>=0?'+':''}${f1(r.a-r.lg)} <small>(${pctS(1+r.pct)})</small></td><td><span class="mu-chip ${rc}">${rl}</span></td></tr>`}).join('')}</tbody></table>`;
+  return `<div class="mu-head ${m.v[2]}"><div><small>Matchup vs the ${esc(nk)} for ${esc(pos)}</small><h3>${vl}</h3><p>${line}</p></div><div class="mu-big"><b>${m.pct>=0?'+':'−'}${pp}%</b><small>${esc(sl)} vs average defense</small></div></div>
+  ${sel}<div class="scroll">${table}</div>
+  <p class="mu-foot">Based on ${m.n} ${esc(nk)} games this season: everything players at his position (${esc(pos)}) combined for against them, per game. Hover a row for the league rank.</p>${inj}`;
 }
 
 // ---------------- situations: rest, home/away, splits
@@ -813,7 +845,7 @@ function renderTicket(){
   const r1=restFor(P.t,ng),r2=restFor(oi,ng);
   if(r1!=null&&r1>=0){const[a,hot]=c.rest(r1),rb=c.restB(r1),x=me_[rb];chips.push([a,hot,x&&x.n?T(c.restLbl[rb],['In this spot',`${f1(x.avg)} (${x.n} g)`,x.avg>=me_.all.avg?'up':'dn'],['Overall',f1(me_.all.avg)],`~His ${sl}.`,x.n<5?'~Small sample.':null):T(c.restLbl[rb],'~No games in this rest spot to compare yet.')])}
   if(r2!=null&&r2>=0){const[a,hot]=c.rest(r2);if(hot){const rb=c.restB(r2),ds=P.b?defSplit(oi,P.b,sd[2]):null,x=ds&&ds[rb];chips.push([`${nick(o)}: ${a.toLowerCase()}`,true,x&&x.n?T(`${nick(o)} on ${c.restLbl[rb].toLowerCase()}`,[`${sd[0]} allowed in this spot`,`${f1(x.avg)} (${x.n} g)`,x.avg>=ds.all.avg?'up':'dn'],['Normally',f1(ds.all.avg)],'~Tired legs on defense can help him.'):T(`${nick(o)} on ${c.restLbl[rb].toLowerCase()}`,'~Tired legs on defense can help him.')])}}
-  const t=P.b?tierOf(oi):null;if(t){const dv=D.dvp[P.b],NT=D.teams.length;chips.push([`${t[0]} vs ${c.posName[P.b]}`,/favorable/i.test(t[0]),T(`${t[0]} matchup`,...dv.k.map((k,i)=>{const rk=dv.rank[oi][i];return [c.dvpLbl[k]||k,`${ord(rk)} most allowed`,rk<=NT/3?'up':rk>2*NT/3?'dn':'']}),`~Where the ${nick(o)} rank among ${NT} teams in what they give up to ${c.posName[P.b]} this season.`)])}
+  const mu=P.b?matchupOf(oi,P.b):null;if(mu)chips.push([mu.v[0],mu.v[1]==='good',T(`${mu.v[0]} for ${c.posName[P.b]}`,...mu.rows.map(r=>[(c.dvpLbl[r.k]||r.k)[0].toUpperCase()+(c.dvpLbl[r.k]||r.k).slice(1),`${pctS(1+r.pct)} vs avg`,r.pct>=.05?'up':r.pct<=-.05?'dn':'']),`~How much more or less the ${nick(o)} give up to ${c.posName[P.b]} than an average defense this season.`)]);
   const oinj=injFor(oi);if(oinj){const ls=oinj.filter(i=>/^out|reserve/i.test(i.s));if(ls.length)chips.push([`${nick(o)}: ${ls.length} out`,false,T(`${o.n}: out`,...ls.map(i=>[i.n,i.p]))])}
   const minj=injFor(P.t);if(minj){const ls=minj.filter(i=>/^out|reserve/i.test(i.s)&&norm(i.n)!==norm(P.n));if(ls.length)chips.push([`${nick(me)}: ${ls.length} out`,false,T(`${me.n}: out`,...ls.map(i=>[i.n,i.p]))])}
   tk.hidden=false;
@@ -872,12 +904,14 @@ function render(anim){
 function renderMatchup(){
   const pc=posCfg(),[k,,fn]=statDef();
   const o=D.teams[st.opp],ng=nextGame(P.t),isNext=ng&&(ng[1]===st.opp||ng[2]===st.opp);
-  $('vsTitle').innerHTML=o?`${logoImg(o)}Matchup: ${esc(o.n)}`:'Matchup';
+  $('vsTitle').innerHTML=o?`${logoImg(o)}vs the ${esc(o.n)}`:'Matchup';
   $('vsSub').textContent=isNext?`Next opponent · ${new Date(ng[0]).toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'})}`:'Pick any opponent to compare';
   $('dvp').innerHTML=dvpHtml();
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const i of $('dvp').querySelectorAll('.track i'))i.style.left=i.dataset.x+'%'}));
+  
   const vr=P.g.filter(r=>r[2]===st.opp),vp=played(vr),vv=vp.map(fn),all=played(P.g);
   $('histTitle').textContent=`His games against the ${o?nick(o):''}`;
+  {const lab=statDef()[1].toLowerCase(),a=mean(vv),u=mean(playerWin().map(fn)),d=a-u,lw=LOWER.has(k);
+   $('histPlain').innerHTML=vp.length?`In <b>${vp.length}</b> game${vp.length>1?'s':''} against them he's averaged <b>${f1(a)} ${esc(lab)}</b>, ${Math.abs(d)<Math.max(.05*Math.abs(u),.2)?'about the same as':`<b class="${(d>0)!==lw?'up':'dn'}">${f1(Math.abs(d))} ${d>0?'more':'fewer'}</b> than`} his usual ${f1(u)}.${vp.length<3?' That\'s a small sample, so lean on the matchup numbers above more.':''}`:''}
   $('histSub').innerHTML=`${vp.length} game${vp.length===1?'':'s'} since ${esc(since())}${vr.length>vp.length?`, ${vr.length-vp.length} missed`:''}${vp.length?' &nbsp; '+legend(mean(playerWin().map(fn)),'his usual'):''}`;
   const cmpKeys=[k,...pc.tiles.filter(x=>x!==k)].slice(0,5);
   $('vsCmp').innerHTML=vp.length?cmpKeys.map(kk=>{const s=pc.stats.find(x=>x[0]===kk),f=s?s[2]:(r=>v(r,kk)),a=mean(vp.map(f)),b=mean(all.map(f)),d=a-b;

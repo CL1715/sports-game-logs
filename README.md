@@ -18,5 +18,6 @@ re-enable it from the Actions tab.
 - Home slate, favorable spots, starred players with a "since your last visit" feed
 - Player pages: projections (floor / standard / upside), hit-rate board, situational splits, with/without teammates, matchup vs position, injuries and news
 - Team pages (roster projections, what they give up, stat partners) and game previews (tale of the tape, situations incl. dome / cold / wind)
+- Advanced tab: percentiles vs position, NBA shot chart and zones vs the opponent's defense, NFL usage (snap / target / air-yards share, WOPR, red zone), target depth and direction, an estimated receiver role, and opponent advanced defense
 - Compare two players, pick journal (saved in your browser, auto-graded), accuracy page grading every saved projection
 - `scripts/snapshot.py` runs the page in headless Chrome each hour to save pre-game projections to `site/history_*.json`

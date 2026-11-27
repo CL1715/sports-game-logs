@@ -36,6 +36,10 @@ jobs:
         continue-on-error: true
         run: python scripts/build_news.py site
 
+      - name: Build advanced stats
+        continue-on-error: true
+        run: python scripts/build_adv.py site
+
       - name: Snapshot projections for accuracy tracking
         continue-on-error: true
         run: python scripts/snapshot.py site

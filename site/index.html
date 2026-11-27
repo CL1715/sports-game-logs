@@ -418,6 +418,38 @@ td.tc{font-weight:700}
   .prow .dot{animation:pop .5s var(--ease) both;animation-delay:calc(var(--i,0)*70ms + .3s)}
 }
 @media(prefers-reduced-motion:reduce){.track i{transition:none}}
+
+/* advanced tab */
+.ptabs{display:flex;gap:4px;margin:0 0 14px;padding:4px;background:var(--soft);border-radius:12px;width:max-content}
+.ptabs button{font:700 15px Barlow,sans-serif;border:0;background:none;color:var(--mut);padding:8px 18px;border-radius:9px;cursor:pointer;transition:background .2s,color .2s}
+.ptabs button[aria-pressed=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px #0002}
+#advBox{display:none}.col-main.adv>section{display:none}.col-main.adv>#advBox{display:block}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px 28px;margin:6px 0 10px}
+.pgrid h3{margin:12px 0 6px}
+.pb{display:grid;grid-template-columns:minmax(110px,1.1fr) 1.3fr 72px;align-items:center;gap:10px;padding:5px 0;font-size:14px;cursor:help}
+.pbl{color:var(--ink)}.pbv{text-align:right;font:600 16px "Barlow Condensed",sans-serif;font-variant-numeric:tabular-nums}.pbv small{color:var(--mut);font:500 11px Barlow,sans-serif}
+.pbt{position:relative;height:6px;border-radius:3px;background:linear-gradient(90deg,color-mix(in oklab,var(--bad) 30%,var(--soft)),var(--soft) 35%,var(--soft) 65%,color-mix(in oklab,var(--good) 30%,var(--soft)))}
+.pbt i{position:absolute;top:50%;translate:-50% -50%;min-width:24px;height:20px;border-radius:10px;font:700 11px/20px Barlow,sans-serif;font-style:normal;text-align:center;color:#fff;background:var(--mut);transition:left .6s var(--ease)}
+.pbt i.good{background:var(--good)}.pbt i.bad{background:var(--bad)}.pbt i.acc{background:var(--acc)}
+.advg{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.3fr);gap:28px;margin-top:10px}
+@media(max-width:820px){.advg{grid-template-columns:1fr}}
+.court{width:100%;max-width:440px;display:block;background:color-mix(in oklab,var(--acc) 5%,var(--soft));border-radius:10px}
+.court .cl *{fill:none;stroke:color-mix(in oklab,var(--mut) 45%,transparent);stroke-width:2}.court .cl{stroke:var(--line)}
+.court .mk{fill:color-mix(in oklab,var(--good) 75%,transparent);stroke:var(--card);stroke-width:1}.court .ms{stroke:color-mix(in oklab,var(--bad) 70%,transparent);stroke-width:1.8;fill:none}
+.lgd2{font-size:13px;color:var(--mut);display:flex;gap:6px;align-items:center}.lgd2 i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:8px}.lgd2 i.mk{background:var(--good)}.lgd2 i.ms{background:var(--bad);border-radius:2px;transform:rotate(45deg) scale(.8)}
+.advg h3 small{font:500 13px Barlow,sans-serif;color:var(--mut);margin-left:6px}#advBox>h3{margin-top:24px}
+.ztab td,.ztab th{white-space:nowrap;padding-left:6px;padding-right:6px}.ztab{font-size:14px}.ztab .up{color:var(--good);font-weight:700}.ztab .dn{color:var(--bad);font-weight:700}.ztab small{color:var(--mut)}
+.zbar{display:inline-block;width:36px;height:6px;border-radius:3px;background:var(--soft);margin-right:8px;vertical-align:middle;overflow:hidden}.zbar i{display:block;height:100%;background:var(--tcb)}
+.trend{display:flex;align-items:flex-end;gap:4px;height:130px;padding:8px 0 0;border-bottom:1px solid var(--line)}
+.tc{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative;cursor:help;min-width:0}
+.tb2{width:100%;max-width:30px;border-radius:4px 4px 0 0;background:color-mix(in oklab,var(--tcb) 70%,transparent);transition:height .6s var(--ease)}
+.tc:hover .tb2{background:var(--tcb)}.tc small{position:absolute;top:0;font:700 12px "Barlow Condensed",sans-serif;color:var(--ink)}.tc em{font:500 10px Barlow,sans-serif;font-style:normal;color:var(--mut);position:absolute;bottom:-16px}
+.trend+.fine{margin-top:22px}
+.rolec{border-left:4px solid var(--tcb);background:var(--soft);border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0}.rolec small{color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:11px}.rolec h3{margin:2px 0 4px}.rolec p{margin:0}.rolec .fine{margin-top:6px}
+.stack{display:flex;height:30px;border-radius:8px;overflow:hidden;margin:6px 0 4px}.stack span{display:flex;align-items:center;justify-content:center;font:700 13px Barlow,sans-serif;color:#fff;cursor:help;min-width:0}
+.stack .s0{background:color-mix(in oklab,var(--tcb) 40%,#888)}.stack .s1{background:color-mix(in oklab,var(--tcb) 65%,#888)}.stack .s2{background:var(--tcb)}.stack .s3{background:color-mix(in oklab,var(--tcb) 70%,#000)}
+.stackl{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:14px}
+.dir{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 10px}.dir div{background:var(--soft);border-radius:8px;padding:8px;text-align:center}.dir b{display:block;font:700 20px "Barlow Condensed",sans-serif}.dir small{color:var(--mut);text-transform:capitalize}
 </style>
 </head>
 <body>
@@ -465,7 +497,9 @@ td.tc{font-weight:700}
 </div>
 
 <div class="layout">
-  <main class="col-main">
+  <main class="col-main" id="colMain">
+    <div class="ptabs" id="ptabs" role="tablist"><button type="button" data-t="ov" aria-pressed="true">Overview</button><button type="button" data-t="adv" aria-pressed="false">Advanced</button></div>
+    <section class="blk rv on" id="advBox"></section>
     <section class="blk rv proj" id="projBox" hidden></section>
     <section class="blk rv stats" id="recBox">
       <div class="ctl"><div class="grp" id="statGrp" aria-label="Stat"></div></div>
@@ -997,6 +1031,7 @@ function setPlayer(p){
   replay($('whoBox'),'in');
   renderContext();render(true);
   replay($('ticket'),'in2');
+  if(PTAB==='adv')renderAdv();
 }
 
 function render(anim){
@@ -1057,7 +1092,121 @@ $('starBtn').addEventListener('click',()=>{if(P)toggleStar(P)});
 document.addEventListener('click',e=>{if(!e.target.closest('.srch'))$('dd').classList.remove('on')});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==$('q')&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('q').focus()}});
 $('mark').addEventListener('input',e=>{const x=parseFloat(e.target.value);st.mark=Number.isFinite(x)?x:null;render(false)});
-$('opp').addEventListener('change',e=>{st.opp=+e.target.value;renderSplits();renderMatchup()});
+$('opp').addEventListener('change',e=>{st.opp=+e.target.value;renderSplits();renderMatchup();if(PTAB==='adv')renderAdv()});
+// ---------------- Advanced tab
+const ADV={};
+const MDEF={
+  // NBA
+  mpg:['Minutes per game','','',''],usg:['Usage rate','%','Share of team plays he finishes with a shot, free throws or a turnover while on the floor.',''],
+  ts:['True shooting','%','Scoring efficiency counting threes and free throws.',''],efg:['Effective FG','%','Field goal % with threes worth 1.5 makes.',''],
+  par3:['3-point rate','%','Share of his shots that are threes.',''],ftr:['Free-throw rate','%','Free throw attempts per 100 shots. Shows how often he gets to the line.',''],
+  ast:['Assist rate','%','Share of teammates’ baskets he assisted while on the floor.',''],reb:['Rebound rate','%','Share of available rebounds he grabbed while on the floor.',''],
+  oreb:['Off. rebound rate','%','Share of his team’s missed shots he rebounded.',''],tov:['Turnover rate','%','Turnovers per 100 plays he uses. Lower is better.',''],
+  p36:['Points','per 36','',''],r36:['Rebounds','per 36','',''],a36:['Assists','per 36','',''],stk36:['Steals + blocks','per 36','',''],
+  // NFL receiving
+  snap:['Snap share','%','Share of his team’s offensive snaps he played.',''],tshare:['Target share','%','Share of team targets in games he played.',''],
+  ayshare:['Air yards share','%','Share of the team’s downfield passing yards thrown his way.',''],wopr:['WOPR','','Weighted opportunity: 1.5 × target share + 0.7 × air-yards share. The best single usage number for receivers.',''],
+  adot:['Avg depth of target','yds','How far downfield he is targeted on average.',''],yacr:['YAC per catch','yds','Yards after the catch.',''],
+  catch:['Catch rate','%','Catches per target.',''],epat:['EPA per target','','Expected points added per target. Measures how much each target helps the offense.',''],
+  fdr:['First-down rate','%','Share of targets that went for a first down.',''],rzshare:['Red-zone target share','%','Share of team targets inside the 20.',''],
+  sep:['Separation','yds','Next Gen Stats: average distance from the nearest defender when the ball arrives.',''],yacoe:['YAC over expected','yds','Next Gen Stats: yards after catch beyond what was expected.',''],
+  deep:['Deep target rate','%','Share of his targets 20+ yards downfield.',''],mid:['Middle-of-field targets','%','Share of his targets over the middle.',''],screen:['Screen targets','%','Charting: share of his targets that were screens.',''],d3share:['Third-down target share','%','Share of team third-down targets.',''],
+  contested:['Contested targets','%','Charting: share of targets that were contested.',''],drop:['Drop rate','%','Charting: drops per catchable target. Lower is better.',''],
+  // NFL rushing
+  cshare:['Carry share','%','Share of team rushes.',''],gl:['Goal-line share','%','Share of team rushes inside the 10.',''],rzc:['Red-zone carry share','%','Share of team rushes inside the 20.',''],
+  epar:['EPA per rush','','Expected points added per carry.',''],succ:['Success rate','%','Share of carries that added expected points.',''],expl:['Explosive runs','%','Share of carries that gained 10+ yards.',''],
+  ybc:['Yards before contact','per carry','Mostly reflects the blocking.',''],yac_r:['Yards after contact','per carry','Mostly reflects the runner.',''],
+  ryoe:['Rush yds over expected','per carry','Next Gen Stats: yards gained beyond what the blocking and defenders predicted.',''],box8:['8+ in the box','%','Share of carries against stacked boxes. Higher means tougher looks.',''],
+  // NFL passing
+  epadb:['EPA per dropback','','Expected points added per dropback, the best single QB efficiency number.',''],cpoe:['Completion % over expected','%','Completion rate vs what throw difficulty predicts.',''],
+  adot_q:['Avg depth of throw','yds','',''],deep_q:['Deep throw rate','%','Throws 20+ yards downfield.',''],ttt:['Time to throw','sec','Next Gen Stats. Lower means quicker.',''],
+  aggr:['Aggressiveness','%','Next Gen Stats: throws into tight coverage.',''],press:['Pressure rate','%','Dropbacks under pressure. Lower is better.',''],
+  sack:['Sack rate','%','Lower is better.',''],bad:['Bad-throw rate','%','Charting: off-target throws. Lower is better.',''],scr:['Scramble rate','%','',''],pa:['Play-action rate','%','',''],
+};
+const AGROUPS={
+  nba:[['Role',['mpg','usg','ast','reb','oreb']],['Efficiency',['ts','efg','ftr','par3','tov']],['Per 36 minutes',['p36','r36','a36','stk36']]],
+  WR:[['Opportunity',['snap','tshare','ayshare','wopr','rzshare']],['How he’s used',['adot','deep','mid','screen','contested','d3share']],['Production',['catch','yacr','yacoe','sep','epat','fdr','drop']]],
+  RB:[['Opportunity',['snap','cshare','gl','rzc','tshare']],['Rushing',['epar','succ','expl','ybc','yac_r','ryoe','box8']],['Receiving',['yacr']]],
+  QB:[['Efficiency',['epadb','cpoe','bad']],['Style',['adot_q','deep_q','ttt','aggr','scr','pa']],['Protection',['press','sack']]]};
+AGROUPS.TE=AGROUPS.WR;
+const NEUTRAL=new Set(['par3','adot','deep','mid','screen','contested','adot_q','deep_q','aggr','scr','pa','ttt','box8','mpg']);
+const SUMNM={sack:'avoiding sacks',press:'avoiding pressure',bad:'accuracy (few bad throws)',tov:'ball security',drop:'sure hands'};
+const fmtM=(k,v)=>v==null?'–':['epat','epar','epadb','wopr'].includes(k)?(+v).toFixed(2):f1(+v);
+function pctBar(k,val,p){const d=MDEF[k]||[k,'',''],cls=p==null||NEUTRAL.has(k)?(p!=null&&(p>=85||p<=15)?'acc':'mut'):p>=70?'good':p<=30?'bad':'mut';
+  return `<div class="pb" tabindex="0" data-tip="${esc(T(d[0],[d[1]&&d[1]!=='%'?`Value (${d[1]})`:'Value',fmtM(k,val)+(d[1]==='%'?'%':''),'b'],p!=null?['Percentile among peers',`${p}th`,cls==='good'?'up':cls==='bad'?'dn':'']:null,d[2]?'~'+d[2]:null,NEUTRAL.has(k)?'~A style number: higher isn’t better or worse, it shows how he’s used.':null))}">
+    <span class="pbl">${esc(d[0])}</span><span class="pbt"><i class="${cls}" style="left:${p==null?50:p}%">${p==null?'':p}</i></span><span class="pbv">${fmtM(k,val)}${d[1]==='%'?'%':d[1]?' <small>'+esc(d[1])+'</small>':''}</span></div>`}
+function loadAdv(lg){if(ADV[lg])return Promise.resolve(ADV[lg]);return fetch(`${lg}_adv.json`,{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null).then(d=>(ADV[lg]=d||{players:{}}))}
+function summarize(a,groups){
+  const hi=[],lo=[],sty=[];for(const[,ks]of groups)for(const k of ks){const p=a.p&&a.p[k];if(p==null)continue;
+    if(NEUTRAL.has(k)){if(p>=90||p<=10)sty.push([k,p])}else if(p>=85)hi.push([k,p]);else if(p<=15)lo.push([k,p])}
+  hi.sort((x,y)=>y[1]-x[1]);lo.sort((x,y)=>x[1]-y[1]);sty.sort((x,y)=>Math.abs(y[1]-50)-Math.abs(x[1]-50));
+  const nm=k=>SUMNM[k]||(MDEF[k]||[k])[0].replace(/^[A-Z](?=[a-z])/,c=>c.toLowerCase());
+  let s=hi.length?`Stands out for ${hi.slice(0,3).map(([k,p])=>`${nm(k)} (${ord(p)} percentile)`).join(', ')}.`:'No category where he ranks in the top 15% of his position.';
+  if(lo.length)s+=` Weak spots: ${lo.slice(0,2).map(([k,p])=>`${nm(k)} (${ord(p)})`).join(' and ')}.`;
+  if(sty.length)s+=` Style: ${sty.slice(0,2).map(([k,p])=>`${p>=50?'very high':'very low'} ${nm(k)}`).join(', ')}.`;
+  return s;
+}
+// NBA shot chart (half court, hoop at bottom)
+function courtSvg(shots){
+  const W=500,H=470,sx=x=>W/2+x*10,sy=hx=>H-hx*10;
+  const lines=`<rect x="0" y="0" width="${W}" height="${H}" fill="none"/><rect x="${sx(-8)}" y="${sy(19)}" width="160" height="190"/><circle cx="${W/2}" cy="${sy(19)}" r="60"/>
+    <path d="M${sx(-22)} ${H}V${sy(14)}A237.5 237.5 0 0 1 ${sx(22)} ${sy(14)}V${H}"/><circle cx="${W/2}" cy="${sy(5.25)}" r="7.5"/><path d="M${sx(-3)} ${sy(4)}H${sx(3)}"/><path d="M${sx(-4)} ${sy(5.25)}A40 40 0 0 0 ${sx(4)} ${sy(5.25)}"/>`;
+  const dots=shots.filter(s=>s[0]<=47).map(([hx,hy,m])=>m?`<circle class="mk" cx="${sx(hy).toFixed(1)}" cy="${sy(hx).toFixed(1)}" r="4.5"/>`:`<path class="ms" d="M${(sx(hy)-3.5).toFixed(1)} ${(sy(hx)-3.5).toFixed(1)}l7 7m0-7l-7 7"/>`).join('');
+  return `<svg class="court" viewBox="0 0 ${W} ${H}" role="img" aria-label="Shot chart"><g class="cl">${lines}</g>${dots}</svg>`;
+}
+const ZN={rim:'At the rim',paint:'Paint (non-rim)',mid:'Mid-range',c3:'Corner 3',ab3:'Above-break 3'};
+function nbaAdv(a,A){
+  const z=a.z||{},lg=A.league||{},oppD=st.opp!=null?(A.defense||{})[String(st.opp)]:null,o=st.opp!=null?D.teams[st.opp]:null,NT=D.teams.length;
+  let fit=0,fitN=0;for(const k in z){if(oppD&&oppD[k]&&oppD[k].fg!=null&&lg[k].fg!=null){fit+=z[k].fr/100*(oppD[k].fg-lg[k].fg);fitN++}}
+  const zoneRows=Object.keys(ZN).map(k=>{const x=z[k];if(!x)return '';const l=lg[k]||{},dd=oppD&&oppD[k];const fgc=x.fg-l.fg>=3?'up':x.fg-l.fg<=-3?'dn':'';
+    return `<tr tabindex="0" data-tip="${esc(T(ZN[k],['His share of shots',`${f1(x.fr)}%`],['League share',`${f1(l.fr)}%`],['His FG%',`${f1(x.fg)}%`,fgc],['League FG%',`${f1(l.fg)}%`],x.as!=null?['Makes assisted',`${f1(x.as)}%`]:null,dd?[`${o.a} allow here`,`${f1(dd.fg)}% (${ord(dd.rk)} most of ${NT})`,dd.rk<=NT/3?'up':dd.rk>2*NT/3?'dn':'']:null,`~${x.a} attempts this season.`))}"><td>${ZN[k]}</td><td><span class="zbar"><i style="width:${Math.min(100,x.fr*2)}%"></i></span>${f1(x.fr)}%</td><td class="${fgc}">${f1(x.fg)}%</td><td class="mutd">${f1(l.fg)}%</td><td>${x.as!=null?f1(x.as)+'%':'–'}</td>${dd?`<td class="${dd.rk<=NT/3?'up':dd.rk>2*NT/3?'dn':''}">${f1(dd.fg)}% <small>${ord(dd.rk)}</small></td>`:''}</tr>`}).join('');
+  const fitTxt=fitN?`Weighted by where he shoots, the ${esc(nick(o))} defense allows <b class="${fit>=0?'up':'dn'}">${fit>=0?'+':''}${f1(fit)} FG%</b> vs league average on his kinds of shots.`:'';
+  return `<div class="advg"><div><h3>Shot chart <small>last ${(a.sh||[]).length} shots</small></h3>${courtSvg(a.sh||[])}<p class="lgd2"><i class="mk"></i>made <i class="ms"></i>missed</p></div>
+    <div><h3>Shot zones</h3><div class="scroll"><table class="sp ztab"><thead><tr><th>Zone</th><th>Share</th><th>FG%</th><th>League</th><th>Assisted</th>${oppD?`<th>${esc(o.a)} allow</th>`:''}</tr></thead><tbody>${zoneRows}</tbody></table></div>${fitTxt?`<p class="plain">${fitTxt}</p>`:''}
+    <p class="fine">Zones come from the shot location: at the rim is within 4 feet, paint is 4–10 feet. "Allow" ranks: 1st = the highest FG% allowed, the softest spot.</p></div></div>
+    <h3>Last 15 games: minutes and usage</h3>${trendNba()}`;
+}
+function trendNba(){
+  const rows=played(P.g).slice(-15);if(!rows.length)return '';
+  const c=k=>C[k]-7,us=rows.map(r=>{const t=TGS[r[1]]&&TGS[r[1]][r[0]];if(!t)return null;const tm=t.f[c('MIN')]||240,den=v(r,'MIN')*(t.f[c('FGA')]+.44*t.f[c('FTA')]+t.f[c('TO')]);return den?100*(v(r,'FGA')+.44*v(r,'FTA')+v(r,'TO'))*(tm/5)/den:null});
+  const mx=Math.max(...rows.map(r=>v(r,'MIN')),1);
+  return `<div class="trend">${rows.map((r,i)=>`<div class="tc" tabindex="0" data-tip="${esc(T(`${cfg().dateLbl(D.games[r[0]],false)} ${r[3]?'vs':'@'} ${D.teams[r[2]].a}`,['Minutes',v(r,'MIN')],['Usage',us[i]!=null?f1(us[i])+'%':'–']))}"><span class="tb2" style="height:${(v(r,'MIN')/mx*82).toFixed(0)}%"></span><small>${us[i]!=null?Math.round(us[i]):''}</small></div>`).join('')}</div><p class="fine">Bars are minutes, numbers are usage %.</p>`;
+}
+function nflAdv(a,A){
+  const o=st.opp!=null?D.teams[st.opp]:null,dd=st.opp!=null?(A.defense||{})[String(st.opp)]:null,NT=D.teams.length,pos=P.p;
+  let h='';
+  if(a.role)h+=`<div class="rolec"><small>Role read</small><h3>${esc(a.role[0])}</h3><p>${esc(a.role[1])}</p><p class="fine">Whether he lines up in the slot isn't in any free dataset, so this comes from where he's targeted: depth, direction and screens.</p></div>`;
+  if(a.prof&&Object.keys(a.prof).length){const P_=a.prof,Lc=a.loc||{};
+    h+=`<div class="advg"><div><h3>Target depth</h3><div class="stack">${[['bh','Behind line'],['sh','0–9 yds'],['int','10–19 yds'],['dp','20+ yds']].map(([k,l],i)=>`<span class="s${i}" style="flex:${P_[k]||0}" tabindex="0" data-tip="${esc(T(l,['Share of targets',`${f1(P_[k])}%`]))}">${(P_[k]||0)>=9?`${Math.round(P_[k])}%`:''}</span>`).join('')}</div><div class="stackl"><span>Behind line</span><span>0–9</span><span>10–19</span><span>20+</span></div>
+      <h3>Target direction</h3><div class="dir">${['left','middle','right'].map(k=>`<div><b>${f1(Lc[k])}%</b><small>${k}</small></div>`).join('')}</div>
+      <p class="plain">${a.m.ezt!=null?`<b>${a.m.ezt}</b> end-zone targets · `:''}${a.m.d3share!=null?`<b>${f1(a.m.d3share)}%</b> of team third-down targets`:''}${a.m.screen!=null?` · <b>${f1(a.m.screen)}%</b> screens`:''}</p></div>
+      <div><h3>Weekly usage</h3>${trendNfl(a)}</div></div>`}
+  else h+=`<h3>Weekly usage</h3>${trendNfl(a)}`;
+  if(dd){const rel={WR:['pepa','pexp','deep',a.role&&/slot|Under|possession/i.test(a.role[0])?'mid':'out','yac'],TE:['pepa','mid','yac','pexp'],RB:['repa','rexp','yac','pepa'],QB:['pepa','press','sackr','blitz','pexp','deep']}[pos]||['pepa','repa'];
+    const lab={pepa:['Pass EPA allowed',3],repa:['Rush EPA allowed',3],pexp:['20+ yd completions allowed','%'],rexp:['10+ yd runs allowed','%'],deep:['Deep completion % allowed','%'],mid:['EPA allowed over the middle',3],out:['EPA allowed outside',3],yac:['YAC allowed per catch',''],press:['Pressure rate',''],sackr:['Sack rate','%'],blitz:['Blitz rate','%']};
+    h+=`<h3>${esc(o.n)} defense: what matters for him</h3><div class="scroll"><table class="sp mu-t"><thead><tr><th>Stat</th><th>Value</th><th>Rank for offenses</th></tr></thead><tbody>${rel.filter(k=>dd[k]!=null).map(k=>{const rk=dd.rk&&dd.rk[k],cl=rk==null?'':rk<=NT/3?'good':rk>2*NT/3?'bad':'mut';
+      return `<tr><td>${esc(lab[k][0])}</td><td class="num">${lab[k][1]===3?(+dd[k]).toFixed(2):f1(dd[k])+(lab[k][1]==='%'||k==='press'?'%':'')}</td><td>${rk?`<span class="mu-chip ${cl}">${ord(rk)} of ${NT}</span>`:''}</td></tr>`}).join('')}</tbody></table></div><p class="fine">Rank 1 = the friendliest defense for an offense in that stat (gives up the most, or pressures the least).</p>`}
+  return h;
+}
+function trendNfl(a){
+  const w=a.w||[];if(!w.length)return '<p class="quiet">No weekly data yet.</p>';
+  const recv=P.p!=='QB'&&P.p!=='RB',k=P.p==='RB'?3:2;
+  return `<div class="trend">${w.map(x=>`<div class="tc" tabindex="0" data-tip="${esc(T(`Week ${x[0]}`,['Snap share',x[1]!=null?x[1]+'%':'–'],P.p!=='QB'?['Target share',x[2]!=null?x[2]+'%':'–']:null,P.p==='RB'||P.p==='QB'?['Carry share',x[3]!=null?x[3]+'%':'–']:null))}"><span class="tb2" style="height:${(x[1]||0)*.82}%"></span><small>${x[k]!=null&&P.p!=='QB'?Math.round(x[k]):''}</small><em>W${x[0]}</em></div>`).join('')}</div><p class="fine">Bars are snap share${P.p==='QB'?'':`; numbers are ${P.p==='RB'?'carry':'target'} share %`}.</p>`;
+}
+function renderAdv(){
+  const box=$('advBox');box.innerHTML='<p class="quiet">Loading advanced stats…</p>';
+  loadAdv(L).then(A=>{if(!P||VIEW!=='player')return;const a=A.players[String(P.id)];
+    if(!a||!a.m){box.innerHTML=`<h2>Advanced</h2><p class="quiet">Not enough ${L==='nba'?'minutes':'snaps'} this season for an advanced profile.</p>`;return}
+    const groups=L==='nba'?AGROUPS.nba:AGROUPS[P.p]||AGROUPS.WR,peer=L==='nba'?`${cfg().posName[P.b]} with 15+ minutes a game`:{WR:'WRs with 20+ targets',TE:'TEs with 15+ targets',RB:'RBs with 30+ carries or 20+ targets',QB:'QBs with 100+ dropbacks'}[P.p];
+    box.innerHTML=`<h2>Advanced profile</h2><p class="plain">${esc(summarize(a,groups))}</p><p class="sub">Percentiles compare him with ${esc(peer)} this season${a.n?` (${a.n} players)`:''}. The dot is his percentile: green 70+, red 30 or below. Orange marks an extreme style number, where higher isn’t better or worse. Hover any row for what it means.</p>
+      <div class="pgrid">${groups.map(([t,ks])=>`<div><h3>${esc(t)}</h3>${ks.filter(k=>a.m[k]!=null).map(k=>pctBar(k,a.m[k],a.p&&a.p[k])).join('')||'<p class="quiet">No data.</p>'}</div>`).join('')}</div>
+      ${L==='nba'?nbaAdv(a,A):nflAdv(a,A)}`;
+    reveal(box)});
+}
+let PTAB='ov';
+function setTab(t){PTAB=t;$('colMain').classList.toggle('adv',t==='adv');for(const b of $('ptabs').children)b.setAttribute('aria-pressed',b.dataset.t===t);if(t==='adv')renderAdv();else reveal($('colMain'))}
+$('ptabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTab(b.dataset.t)});
+
 $('lgGrp').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b&&b.dataset.v!==L)go((VIEW==='acc'?'acc-':'home-')+b.dataset.v)});
 
 // ---------------- shared helpers for dashboard / team / game views
